@@ -1,0 +1,37 @@
+{
+  "_note": "Durées et poids RÉELS mesurés par ffprobe au moment de la production.",
+  "videos": {
+    "app": {
+      "nom": "tuto-application",
+      "methode": "ffmpeg — séquence animée des captures réelles de l'application (harnais phase3), Ken Burns léger, muet",
+      "duree_s": 30.0,
+      "poids_mp4_mo": 1.16,
+      "poids_webm_mo": 1.17,
+      "objectif_duree": "30 s"
+    },
+    "hero": {
+      "nom": "hero-loop",
+      "methode": "Playwright — widget réel sur eperformance.pro, question réelle à l'API ; ffmpeg H.264+VP9, muet",
+      "duree_s": 18.0,
+      "poids_mp4_mo": 0.28,
+      "poids_webm_mo": 0.42,
+      "objectif_duree": "15-20 s"
+    },
+    "install": {
+      "nom": "tuto-installation",
+      "methode": "Playwright — widget réel installé sur eperformance.pro ; ffmpeg + surtitres, muet",
+      "duree_s": 43.0,
+      "poids_mp4_mo": 0.69,
+      "poids_webm_mo": 0.98,
+      "objectif_duree": "30-45 s"
+    },
+    "demo": {
+      "nom": "demo-produit",
+      "methode": "Playwright — enregistrement de la landing (démo réelle, 2 questions à l'API) ; ffmpeg + surtitres Liberation Sans, muet",
+      "duree_s": 78.0,
+      "poids_mp4_mo": 2.32,
+      "poids_webm_mo": 2.54,
+      "objectif_duree": "60-90 s"
+    }
+  }
+}
