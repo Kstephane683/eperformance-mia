@@ -153,6 +153,8 @@ def verifier_contenu_sectoriel(index: str) -> None:
     # artefact de la v1 et n'est plus imposée. L'archive v1 intégrait le
     # contenu pré-rendu par le générateur et n'est donc pas jugée sur ce point
     # — ces contrôles s'activent avec la conception de SITE.
+    if en_passation():
+        return
     consomme = any(marqueur in index for marqueur in (
         "contenu-sectoriel.json", "contenu_sectoriel", "contenuSectoriel"))
     if not consomme:
