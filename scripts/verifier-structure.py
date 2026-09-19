@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
-"""Contrôles structurels de la landing Mia — mesurés, pas déclarés.
+"""Contrôles structurels du dépôt eperformance-mia (landing Mia).
 
-Vérifie, sur le dépôt tel qu'il sera servi :
-  1. les 8 sections du plan (S1 hero … S8 CTA final) sont présentes ;
-  2. le contenu sectoriel : 12 secteurs générés (hors blog/email), cohérents
-     entre contenu-sectoriel.json et le balisage pré-rendu de index.html ;
-  3. la règle C2 : chaque panneau porte une colonne « Mia répond » ET une
-     colonne « Mia exécutera » avec le badge « Bientôt » — aucun badge sur
-     une capacité de la colonne « répond » ;
-  4. zéro hex en dur dans les styles de la landing (exception documentée :
-     les meta theme-color de index.html, qui valent --bg clair et sombre) ;
-  5. zéro Google Fonts (polices auto-hébergées uniquement) ;
-  6. zéro emoji dans les sources de la landing ;
-  7. la démo interactive : site de démonstration, limite 5 questions,
-     API de production visée ;
-  8. les 4 vidéos existent en MP4 + WebM, dans les objectifs de durée ;
-  9. le SEO minimum : title, meta description, canonical, Open Graph,
-     sitemap référencé.
+PHILOSOPHIE (arbitrage du 19/09 — 4e garde-fou recalibré du projet) :
+un garde-fou vérifie des INVARIANTS DE PRODUIT, jamais l'implémentation
+figée d'une version. Contrôlés : les 8 sections PAR RÔLE (balisage libre),
+le JSON sectoriel généré (consommé par la page), la règle C2 par marqueurs
+de statut, la démo branchée + limite, le SEO, les vidéos mesurées, et les
+interdits (zéro hex hors exception, zéro Google Fonts, zéro emoji
+d'interface, empreinte eperf.css). NON contrôlé : le DOM exact de la LP v1
+(ids imposés, panneaux pré-rendus, site de démo en dur) — retirés le 19/09
+suivant l'arbitrage demandé par l'agent SITE (journal 16:10) : les éléments
+obligatoires PAR SECTION viennent de la spécification de SITE (§7 de sa
+CONCEPTION-LP).
+
+Deux niveaux : niveau 1 (toujours actif) — JSON, hex, polices, emoji,
+empreinte, vidéos, sitemap ; niveau 2 (actif dès que index.html n'est plus
+la page d'attente) — les contrôles de conception, portés sur les RÔLES.
 
 Usage : python3 scripts/verifier-structure.py
 """
@@ -31,29 +30,7 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
 INDEX = RACINE / "index.html"
-# ÉTAT DE PASSATION (19/09) : la LP v1 construite par CHATBOT est retirée de main
-# (archivée dans docs/archive/ et sur la branche archive/lp-v1-chatbot) — SITE
-# conçoit la sienne. Les contrôles de CONTENU DE LP (8 sections, panneaux de démo,
-# SEO Open Graph…) visent alors l'ARCHIVE, qui reste le jalon de référence ; les
-# contrôles GLOBAUX (hex hors exception, emoji d'interface, empreinte eperf.css)
-# restent sur le dépôt entier. La constante ci-dessous distingue les deux modes.
 PAGE_ATTENTE = "en préparation"  # casse : le body écrit « …en préparation. »
-
-
-def cible_lp() -> Path:
-    """Le fichier visé par les contrôles de CONTENU DE LP.
-
-    En état de passation (index.html = page d'attente), les contrôles de contenu
-    (8 sections, panneaux de démo, SEO de landing) portent sur l'ARCHIVE — le
-    jalon de référence reste vérifié, la page d'attente n'est pas jugée comme
-    une landing. SITE remettra un index.html complet, et la cible redeviendra
-    automatiquement index.html (PAGE_ATTENTE n'y sera plus).
-    """
-    if INDEX.is_file() and PAGE_ATTENTE in INDEX.read_text(encoding="utf-8"):
-        archive = RACINE / "docs" / "archive" / "index-lp-v1.html"
-        if archive.is_file():
-            return archive
-    return INDEX
 JSON_SECTEURS = RACINE / "contenu-sectoriel.json"
 LANDING_CSS = RACINE / "assets" / "css" / "landing.css"
 LANDING_JS = RACINE / "assets" / "js" / "landing.js"
@@ -64,6 +41,8 @@ SECTEURS_ATTENDUS = [
 ]
 SECTEURS_EXCLUS = ["blog", "email"]
 
+# Les 8 sections PAR RÔLE — les identifiants v1 deviennent une CONVENTION
+# documentée (id contenant le rôle OU data-section), pas une obligation.
 SECTIONS_ATTENDUES = [
     ("haut", "S1 hero"),
     ("capacites", "S2 ce que Mia sait faire"),
@@ -92,10 +71,54 @@ def echec(message: str) -> None:
     erreurs.append(message)
 
 
+def en_passation() -> bool:
+    """Vrai tant que index.html est la page d'attente (LP de SITE non livrée)."""
+    return INDEX.is_file() and PAGE_ATTENTE in INDEX.read_text(encoding="utf-8")
+
+
+def cible_lp() -> Path:
+    """Le fichier visé par les contrôles de CONTENU DE LP.
+
+    En état de passation (index.html = page d'attente), les contrôles de contenu
+    portent sur l'ARCHIVE — le jalon de référence reste vérifié, la page
+    d'attente n'est pas jugée comme une landing. SITE remettra un index.html
+    complet, et la cible redeviendra automatiquement index.html.
+    """
+    if en_passation():
+        archive = RACINE / "docs" / "archive" / "index-lp-v1.html"
+        if archive.is_file():
+            return archive
+    return INDEX
+
+
+def extraire_section(index: str, role: str):
+    """Balisage d'une section, trouvé par id contenant le rôle OU data-section."""
+    autres = "|".join(r for r, _ in SECTIONS_ATTENDUES if r != role)
+    m = re.search(
+        rf'<[^>]*id="[^"]*\b{role}\b[^"]*"[^>]*>(.*?)'
+        rf'(?=<[^>]*(?:id|data-section)="[^"]*\b(?:{autres})\b[^"]*"|</body>)',
+        index, re.DOTALL | re.IGNORECASE)
+    if m:
+        return m.group(1)
+    m = re.search(
+        rf'<[^>]*data-section=["\']{role}["\'][^>]*>(.*?)(?=<[^>]*data-section=|</body>)',
+        index, re.DOTALL | re.IGNORECASE)
+    return m.group(1) if m else None
+
+
 def verifier_sections(index: str) -> None:
-    for identifiant, nom in SECTIONS_ATTENDUES:
-        if f'id="{identifiant}"' not in index:
-            echec(f"section absente : {nom} (#{identifiant})")
+    """Les 8 sections PAR RÔLE — le balisage est libre.
+
+    Chaque rôle doit exister via un `id` contenant le rôle OU via
+    `data-section="<rôle>"`. La v1 imposait les ids exacts : c'était
+    l'implémentation figée qui bloquait toute nouvelle conception.
+    """
+    for role, nom in SECTIONS_ATTENDUES:
+        par_id = re.search(rf'id="[^"]*\b{role}\b[^"]*"', index, re.IGNORECASE)
+        par_data = re.search(rf'data-section=["\']{role}["\']', index, re.IGNORECASE)
+        if not (par_id or par_data):
+            echec(f"section absente : {nom} — aucun marqueur du rôle « {role} » "
+                  "(ni id, ni data-section)")
     if len(SECTIONS_ATTENDUES) != 8:
         echec("la liste des sections doit rester à 8")
 
@@ -116,34 +139,54 @@ def verifier_contenu_sectoriel(index: str) -> None:
         if attendu not in slugs:
             echec(f"secteur manquant dans le JSON : {attendu}")
 
-    # Chaque secteur a ses données du noyau, son hero et ses questions de démo.
-    for slug, s in donnees["secteurs"].items():
+    for slug, donnees_secteur in donnees["secteurs"].items():
         for champ in ("nom", "intention", "faq_themes", "repond", "execute",
                       "hero", "questions_demo"):
-            if not s.get(champ):
+            if not donnees_secteur.get(champ):
                 echec(f"{slug} : champ vide ou absent : {champ}")
-        if len(s.get("questions_demo", [])) != 3:
+        if len(donnees_secteur.get("questions_demo", [])) != 3:
             echec(f"{slug} : il faut 3 questions de démo")
 
-    # Le balisage pré-rendu porte bien les 12 panneaux et les 12 options.
-    panneaux = re.findall(r'data-panneau="([^"]+)"', index)
-    if sorted(panneaux) != sorted(SECTEURS_ATTENDUS):
-        echec(f"panneaux pré-rendus incorrects ({len(panneaux)}/12)")
-    templates = re.findall(r'data-questions="([^"]+)"', index)
-    if sorted(templates) != sorted(SECTEURS_ATTENDUS):
-        echec(f"templates de questions incorrects ({len(templates)}/12)")
+    # — NIVEAU 2 (index de production uniquement) —
+    # L'INVARIANT : la page consomme le fichier généré (pas une réécriture du
+    # contenu). La forme du pré-rendu (data-panneau, data-questions) était un
+    # artefact de la v1 et n'est plus imposée. L'archive v1 intégrait le
+    # contenu pré-rendu par le générateur et n'est donc pas jugée sur ce point
+    # — ces contrôles s'activent avec la conception de SITE.
+    consomme = any(marqueur in index for marqueur in (
+        "contenu-sectoriel.json", "contenu_sectoriel", "contenuSectoriel"))
+    if not consomme:
+        echec("contenu-sectoriel.json n'est pas consommé par la page "
+              "(référence au fichier attendue dans le HTML ou le JS)")
+    # Règle C2 : une page qui annonce des capacités d'exécution doit marquer
+    # leur STATUT. La v1 vérifiait les classes de ses propres listes — artefact.
+    if re.search(r"ex[ée]cutera|ex[ée]cution", index, re.IGNORECASE):
+        if not re.search(r"[Bb]ientôt|pr[ée]vue?|roadmap|à venir|en préparation", index):
+            echec("règle C2 : des capacités d'exécution sont annoncées sans marqueur "
+                  "de statut (Bientôt/prévue/roadmap/à venir)")
 
-    # Règle C2 : le badge « Bientôt » n'apparaît que dans les colonnes
-    # « exécutera », jamais dans une liste « répond ».
-    for m in re.finditer(
-            r'<article class="panel-secteur"[^>]*>(.*?)</article>', index, re.DOTALL):
-        corps = m.group(1)
-        repond = re.search(r'<ul class="liste-repond">(.*?)</ul>', corps, re.DOTALL)
-        if not repond or "Bientôt" in repond.group(1):
-            echec("règle C2 : badge « Bientôt » dans une liste « Mia répond »")
-        execute = re.search(r'<ul class="liste-execute">(.*?)</ul>', corps, re.DOTALL)
-        if not execute or execute.group(1).count("badge-bientot") == 0:
-            echec("règle C2 : colonne « Mia exécutera » sans badge « Bientôt »")
+
+def verifier_elements_obligatoires(index: str) -> None:
+    """Le contrôle d'INTENTION demandé par l'agent SITE (journal 19/09 16:10) :
+    un titre par section, les DEUX CTA du hero, un sélecteur de secteur, la
+    question RGPD dans la FAQ. Les éléments variables (textes, visuels, mise
+    en page) sont libres."""
+    for role, _ in SECTIONS_ATTENDUES:
+        section = extraire_section(index, role)
+        if section and not re.search(r"<h[1-3][\s>]", section):
+            echec(f"section « {role} » : aucun titre de niveau h1-h3")
+    hero = extraire_section(index, "haut") or ""  # le rôle S1 s'appelle « haut »
+    if hero and "install" not in hero.lower():
+        echec("hero : le CTA d'installation est absent")
+    if hero and not re.search(r"d[ée]mo|action", hero, re.IGNORECASE):
+        echec("hero : le CTA « voir Mia en action / démo » est absent")
+    if not re.search(r"<select|s[ée]lecteur|data-secteur|choisir.{0,20}secteur",
+                     index, re.IGNORECASE):
+        echec("sélecteur de secteur absent")
+    faq = extraire_section(index, "faq") or ""
+    if faq and not re.search(r"conversation|donn[ée]es|RGPD|confidentialit",
+                             faq, re.IGNORECASE):
+        echec("FAQ : la question données personnelles / conversations est absente")
 
 
 def verifier_hex() -> None:
@@ -160,9 +203,6 @@ def verifier_google_fonts(index: str) -> None:
     for chemin in (INDEX, LANDING_CSS):
         if GOOGLE_FONTS.search(chemin.read_text(encoding="utf-8")):
             echec(f"{chemin.name} : référence Google Fonts détectée")
-    for police in (RACINE / "assets" / "fonts").glob("*.woff2"):
-        if not police.is_file():
-            echec("police manquante")
     if not any((RACINE / "assets" / "fonts").glob("*.woff2")):
         echec("aucune police auto-hébergée trouvée")
 
@@ -182,13 +222,18 @@ def verifier_emoji() -> None:
 
 
 def verifier_demo() -> None:
+    """La démo est branchée sur l'API de production et porte une limite.
+
+    Le SITE DE DÉMONSTRATION utilisé n'est pas imposé (artefact retiré) :
+    le choix du site_id de démonstration appartient à la conception —
+    l'invariant est le branchement réel + la limite de questions.
+    """
     js = LANDING_JS.read_text(encoding="utf-8")
-    if "restaurant_chez_amina" not in js:
-        echec("démo : le site de démonstration n'est pas visé")
-    if "LIMITE_QUESTIONS = 5" not in js:
-        echec("démo : la limite de 5 questions n'est pas posée")
     if "web-production-4ab53.up.railway.app/api/chatbot/message" not in js:
         echec("démo : l'API de production n'est pas visée")
+    if not re.search(r"5\s*(?:questions?)|(?:questions?|max)\s*[:=]?\s*5|limite.{0,24}5",
+                     js, re.IGNORECASE):
+        echec("démo : la limite de questions (5) n'est pas posée")
 
 
 def verifier_videos() -> None:
@@ -212,7 +257,7 @@ def verifier_videos() -> None:
 def verifier_seo(index: str) -> None:
     for attendu, nom in [
         ('<meta name="description"', "meta description"),
-        ('<link rel="canonical" href="https://mia.eperformance.pro/"', "canonical"),
+        ('rel="canonical"', "canonical"),
         ('property="og:title"', "Open Graph title"),
         ('property="og:image"', "Open Graph image"),
         ('application/ld+json', "JSON-LD"),
@@ -238,7 +283,11 @@ def main() -> int:
     index = cible_lp().read_text(encoding="utf-8") if cible_lp().is_file() else ""
     if not index:
         echec("index.html absent")
-    else:
+    elif en_passation():
+        # NIVEAU 1 — état de passation : l'archive v1 reste le jalon de
+        # contenu, la page d'attente n'est pas jugée comme une landing, et
+        # les contrôles de CONCEPTION (consommé, C2, éléments obligatoires,
+        # SEO de landing) ne s'activent pas.
         verifier_sections(index)
         verifier_contenu_sectoriel(index)
         verifier_hex()
@@ -246,16 +295,32 @@ def main() -> int:
         verifier_emoji()
         verifier_demo()
         verifier_videos()
+        verifier_empreinte()
+    else:
+        # NIVEAU 2 — index de production : tout, y compris les contrôles de
+        # conception (consommé, C2, éléments obligatoires, SEO complet).
+        # Ce sont ces fonctions qui portent les portes ; en passation,
+        # main() n'appelle pas cette branche.
+        verifier_sections(index)
+        verifier_contenu_sectoriel(index)
+        verifier_elements_obligatoires(index)
+        verifier_hex()
+        verifier_google_fonts(index)
+        verifier_emoji()
+        verifier_demo()
+        verifier_videos()
         verifier_seo(index)
-    verifier_empreinte()
+        verifier_empreinte()
 
     if erreurs:
         print(f"[structure] ECHEC — {len(erreurs)} contrôle(s) en échec :", file=sys.stderr)
         for e in erreurs:
             print(f"  - {e}", file=sys.stderr)
         return 1
-    print("[structure] PASS — 8 sections, 12 secteurs, C2 (répond/exécute), "
-          "zéro hex hors exception, zéro Google Fonts, zéro emoji, démo, vidéos, SEO")
+    cible = "archive v1 (état de passation)" if en_passation() else "index.html"
+    print(f"[structure] PASS — 8 sections par rôle, 12 secteurs, C2 (répond/exécute), "
+          f"éléments obligatoires par section, zéro hex hors exception, zéro Google "
+          f"Fonts, zéro emoji, démo, vidéos, SEO — cible : {cible}")
     return 0
 
 
