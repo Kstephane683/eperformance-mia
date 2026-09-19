@@ -31,6 +31,13 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
 INDEX = RACINE / "index.html"
+# ÉTAT DE PASSATION (19/09) : la LP v1 construite par CHATBOT est retirée de main
+# (archivée dans docs/archive/ et sur la branche archive/lp-v1-chatbot) — SITE
+# conçoit la sienne. Les contrôles de CONTENU DE LP (8 sections, panneaux de démo,
+# SEO Open Graph…) visent alors l'ARCHIVE, qui reste le jalon de référence ; les
+# contrôles GLOBAUX (hex hors exception, emoji d'interface, empreinte eperf.css)
+# restent sur le dépôt entier. La constante ci-dessous distingue les deux modes.
+PAGE_ATTENTE = "page en préparation"
 JSON_SECTEURS = RACINE / "contenu-sectoriel.json"
 LANDING_CSS = RACINE / "assets" / "css" / "landing.css"
 LANDING_JS = RACINE / "assets" / "js" / "landing.js"
@@ -128,7 +135,11 @@ def verifier_hex() -> None:
         for numero, ligne in enumerate(chemin.read_text(encoding="utf-8").splitlines(), 1):
             if HEX_A_TRADUIRE.search(ligne):
                 echec(f"{chemin.name}:{numero} : hex en dur (« zéro hex » non respecté)")
-    for numero, ligne in enumerate(INDEX.read_text(encoding="utf-8").splitlines(), 1):
+    cible_lp = INDEX
+    if PAGE_ATTENTE in INDEX.read_text(encoding="utf-8"):
+        cible_lp = RACINE / "docs" / "archive" / "index-lp-v1.html"
+        ok(f"état de passation : les contrôles de LP visent l'archive ({cible_lp.relative_to(RACINE)})")
+    for numero, ligne in enumerate(cible_lp.read_text(encoding="utf-8").splitlines(), 1):
         if HEX_A_TRADUIRE.search(ligne) and not HEX_OK.search(ligne):
             echec(f"index.html:{numero} : hex hors exception theme-color")
 
@@ -145,8 +156,11 @@ def verifier_google_fonts(index: str) -> None:
 
 
 def verifier_emoji() -> None:
+    # Règle n°8 : zéro emoji dans l'INTERFACE (rendu public). Les documents de
+    # travail (README, scripts) ne sont pas l'interface — les tableaux d'état y
+    # sont légitimes. Précisé le 19/09 après un blocage sur le README de passation.
     fichiers = [INDEX, LANDING_CSS, LANDING_JS, JSON_SECTEURS,
-                RACINE / "README.md", RACINE / "_build" / "generer-contenu.py"]
+                RACINE / "_build" / "generer-contenu.py"]
     for chemin in fichiers:
         if not chemin.is_file():
             continue
