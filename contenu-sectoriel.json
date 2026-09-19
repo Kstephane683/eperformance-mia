@@ -1,0 +1,374 @@
+{
+  "_genere_le": "2026-09-19T15:31:24Z",
+  "_source": "agent-ia-web/eperf_core/sectors.py — SECTEURS (12 secteurs clients, hors blog/email)",
+  "_regle": "Mia répond (vérifiable) / Mia exécute (roadmap, badge Bientôt) — règle C2",
+  "secteurs": {
+    "restauration": {
+      "nom": "Restauration",
+      "intention": "Donner faim et lever le doute pratique : la carte, les formules, les horaires et un moyen de réserver une table.",
+      "intention_reformulee": "Un client affamé veut une réponse immédiate : la carte, les horaires, une table. Mia tient ce rôle jour et nuit — elle répond, et vous transmet la demande de réservation.",
+      "faq_themes": [
+        "réservation",
+        "allergies et régimes",
+        "horaires",
+        "groupes et événements privés"
+      ],
+      "repond": [
+        "Demande de réservation transmise (prise de contact)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Réservation réelle avec agenda",
+        "Commande en ligne",
+        "Liste d'attente"
+      ],
+      "hero": {
+        "titre": "Votre site mérite une assistante qui répond à vos clients jour et nuit",
+        "accroche": "Mia présente votre carte, vos horaires et vos options pour allergies et régimes, puis vous transmet chaque demande de réservation."
+      },
+      "questions_demo": [
+        "Comment réserver une table ?",
+        "Avez-vous des options pour les allergies et les régimes particuliers ?",
+        "Quels sont vos horaires ?"
+      ]
+    },
+    "hotellerie": {
+      "nom": "Hôtellerie",
+      "intention": "Faire réserver une nuit : montrer les chambres avec leur tarif, les offres de séjour, et rassurer par les avis et l'accès.",
+      "intention_reformulee": "Un voyageur réserve quand son doute est levé : la chambre, le tarif, l'arrivée, l'annulation. Mia répond à chacune de ces questions avec les informations de votre établissement.",
+      "faq_themes": [
+        "arrivée et départ",
+        "réservation et annulation",
+        "équipements",
+        "accès et stationnement"
+      ],
+      "repond": [
+        "Demande de réservation transmise (prise de contact)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Réservation réelle",
+        "Check-in digital",
+        "Room service",
+        "Upselling"
+      ],
+      "hero": {
+        "titre": "Votre hôtel mérite une assistante qui répond à vos voyageurs à toute heure",
+        "accroche": "Mia présente vos chambres, vos conditions d'arrivée et d'annulation, puis vous transmet chaque demande de réservation."
+      },
+      "questions_demo": [
+        "À quelles heures se font l'arrivée et le départ ?",
+        "Comment réserver et jusqu'à quand annuler ?",
+        "Quels équipements sont disponibles ?"
+      ]
+    },
+    "ecommerce": {
+      "nom": "Boutique en ligne",
+      "intention": "Faire commander : montrer le catalogue avec les prix, les conditions de livraison et de retour, et lever les objections avant le panier.",
+      "intention_reformulee": "Un client qui hésite sur la livraison, la taille ou le retour repart sans acheter. Mia répond au moment précis de l'hésitation — et capture le contact d'un panier abandonné.",
+      "faq_themes": [
+        "livraison",
+        "retours et remboursements",
+        "paiement",
+        "compte client"
+      ],
+      "repond": [
+        "Capture de contact sur panier abandonné",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Lecture des commandes du site",
+        "Récupération des paniers abandonnés",
+        "Recommandations produits"
+      ],
+      "hero": {
+        "titre": "Votre boutique mérite une assistante qui répond à vos clients pendant qu'ils achètent",
+        "accroche": "Mia répond sur les produits, la livraison, les retours et le paiement — et capture le contact d'un panier abandonné."
+      },
+      "questions_demo": [
+        "Quels sont vos délais et zones de livraison ?",
+        "Comment fonctionnent les retours et les remboursements ?",
+        "Quels moyens de paiement acceptez-vous ?"
+      ]
+    },
+    "immobilier": {
+      "nom": "Immobilier",
+      "intention": "Faire visiter : présenter les biens disponibles, situer l'intervention, et donner un interlocuteur identifié.",
+      "intention_reformulee": "Un prospect veut voir avant de visiter : le bien, le prix, le financement. Mia présente vos biens et qualifie le prospect pendant que vos agents travaillent.",
+      "faq_themes": [
+        "visite",
+        "financement",
+        "frais et notaire",
+        "estimation"
+      ],
+      "repond": [
+        "Qualification du prospect (budget, localisation, type)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Agenda d'agent pour les visites",
+        "Fiches envoyées automatiquement",
+        "CRM"
+      ],
+      "hero": {
+        "titre": "Votre agence mérite une assistante qui répond à chaque prospect dès sa première question",
+        "accroche": "Mia présente vos biens, la visite et le financement, puis qualifie le prospect : budget, localisation, type de bien."
+      },
+      "questions_demo": [
+        "Comment organiser une visite ?",
+        "Comment se passe le financement d'un achat ?",
+        "Quels sont les frais de notaire et les frais annexes ?"
+      ]
+    },
+    "mlm": {
+      "nom": "Marketing de réseau",
+      "intention": "Faire rejoindre un réseau : expliquer comment on démarre, ce que rapporte chaque niveau, et qui l'a déjà fait — sans promesse de revenu.",
+      "intention_reformulee": "Un candidat se décide quand le démarrage, l'investissement et la rémunération sont clairs. Mia explique les trois en langage simple, 24 h sur 24.",
+      "faq_themes": [
+        "démarrage et investissement",
+        "plan de rémunération",
+        "produits",
+        "parrainage et parrain"
+      ],
+      "repond": [
+        "Qualification et recrutement 24 h sur 24",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Suivi d'activité du réseau",
+        "Formations recommandées"
+      ],
+      "hero": {
+        "titre": "Votre réseau mérite une assistante qui répond aux candidats jour et nuit",
+        "accroche": "Mia explique comment démarrer, l'investissement et le plan de rémunération en langage simple, puis qualifie chaque candidat."
+      },
+      "questions_demo": [
+        "Comment démarrer et quel est l'investissement de départ ?",
+        "Comment fonctionne le plan de rémunération ?",
+        "Quels produits proposez-vous ?"
+      ]
+    },
+    "beaute": {
+      "nom": "Beauté et soins",
+      "intention": "Vendre des soins à l'acte (coiffure, esthétique, spa) : le site doit montrer la main qui tient le geste et le résultat obtenu, puis prendre rendez-vous.",
+      "intention_reformulee": "Une cliente choisit un geste et une praticienne : quels soins, quels produits, quel délai pour un rendez-vous. Mia répond à tout cela depuis votre site — et laisse le rendez-vous à prendre avec vous.",
+      "faq_themes": [
+        "soins",
+        "prise de rendez-vous",
+        "produits utilisés",
+        "annulation et report"
+      ],
+      "repond": [
+        "Prise de rendez-vous transmise (contact)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Rendez-vous réels avec agenda",
+        "Rappels automatiques"
+      ],
+      "hero": {
+        "titre": "Votre salon mérite une assistante qui répond à vos clientes, même après la fermeture",
+        "accroche": "Mia présente vos soins, vos produits utilisés et vos conditions d'annulation, puis vous transmet chaque demande de rendez-vous."
+      },
+      "questions_demo": [
+        "Quels soins proposez-vous ?",
+        "Comment prendre rendez-vous ?",
+        "Quels produits utilisez-vous ?"
+      ]
+    },
+    "sante": {
+      "nom": "Santé",
+      "intention": "Convertir une inquiétude en rendez-vous : dire qui soigne, selon quelle méthode, et à quel tarif — sans promettre de résultat.",
+      "intention_reformulee": "Une inquiétude doit se transformer en rendez-vous, pas rester sans réponse. Mia répond aux questions pratiques et vous transmet chaque demande de rendez-vous.",
+      "faq_themes": [
+        "prise de rendez-vous",
+        "remboursement et mutuelle",
+        "assurance",
+        "urgences"
+      ],
+      "repond": [
+        "Tri et orientation des demandes, rappels",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Rendez-vous réels",
+        "Préparation avant consultation"
+      ],
+      "hero": {
+        "titre": "Votre cabinet mérite une assistante qui répond aux inquiétudes de vos patients",
+        "accroche": "Mia répond aux questions pratiques — remboursement, mutuelle, urgences — et vous transmet chaque demande de rendez-vous."
+      },
+      "questions_demo": [
+        "Comment prendre rendez-vous ?",
+        "Vos prestations sont-elles prises en charge par la mutuelle ?",
+        "Travaillez-vous avec les assurances ?"
+      ]
+    },
+    "education": {
+      "nom": "Éducation et formation",
+      "intention": "Faire candidater : présenter les programmes et leurs frais, la pédagogie qui les distingue, et les preuves d'insertion.",
+      "intention_reformulee": "Un futur étudiant compare des programmes avant de candidater. Mia présente les vôtres — niveau, durée, frais — et vous transmet chaque dossier.",
+      "faq_themes": [
+        "inscription et dossier",
+        "frais de scolarité",
+        "diplômes et accréditations",
+        "calendrier et rythme"
+      ],
+      "repond": [
+        "Dossier de candidature transmis",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Admission réelle en ligne",
+        "Support étudiant automatisé"
+      ],
+      "hero": {
+        "titre": "Votre établissement mérite une assistante qui répond aux futurs étudiants",
+        "accroche": "Mia présente vos programmes, vos frais et votre calendrier, puis vous transmet chaque dossier de candidature."
+      },
+      "questions_demo": [
+        "Comment s'inscrire et constituer son dossier ?",
+        "Quels sont les frais de scolarité ?",
+        "Vos diplômes sont-ils reconnus et accrédités ?"
+      ]
+    },
+    "evenementiel": {
+      "nom": "Événementiel",
+      "intention": "Remplir une date : publier le programme, ouvrir la billetterie ou la réservation, et montrer les éditions passées.",
+      "intention_reformulee": "Un visiteur décide vite : le programme, la billetterie, l'accès. Mia répond en continu et vous transmet chaque demande de devis.",
+      "faq_themes": [
+        "billetterie et places",
+        "devis",
+        "lieu et accès",
+        "prestataires et traiteurs"
+      ],
+      "repond": [
+        "Demande de devis transmise (contact)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Billetterie réelle",
+        "Gestion des prestataires"
+      ],
+      "hero": {
+        "titre": "Votre événement mérite une assistante qui répond à vos visiteurs en continu",
+        "accroche": "Mia présente le programme, la billetterie et l'accès, puis vous transmet chaque demande de devis."
+      },
+      "questions_demo": [
+        "Comment obtenir des billets et où en trouver ?",
+        "Comment obtenir un devis ?",
+        "Où se déroule l'événement et comment y accéder ?"
+      ]
+    },
+    "tourisme": {
+      "nom": "Tourisme et voyages",
+      "intention": "Faire partir : présenter des séjours et des circuits datés, les destinations couvertes, et donner envie par l'image.",
+      "intention_reformulee": "Un voyageur part quand les formalités et le devis sont clairs. Mia présente vos séjours et vous transmet chaque demande de réservation.",
+      "faq_themes": [
+        "devis et réservation",
+        "formalités et visa",
+        "annulation",
+        "taille des groupes"
+      ],
+      "repond": [
+        "Devis et demande de réservation transmis (contact)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Réservation réelle",
+        "Documents de voyage"
+      ],
+      "hero": {
+        "titre": "Votre agence mérite une assistante qui répond aux voyageurs avant le départ",
+        "accroche": "Mia présente vos séjours, les formalités et les devis, puis vous transmet chaque demande de réservation."
+      },
+      "questions_demo": [
+        "Comment obtenir un devis et réserver ?",
+        "Quelles sont les formalités et les visas nécessaires ?",
+        "Quelle est votre politique d'annulation ?"
+      ]
+    },
+    "artisan": {
+      "nom": "Artisanat et bâtiment",
+      "intention": "Obtenir un devis : montrer les prestations, les chantiers déjà livrés, et l'atelier ou l'équipe qui les tient.",
+      "intention_reformulee": "Un client compare des devis pendant que vous êtes sur le chantier. Mia répond sur vos prestations, vos matériaux et vos délais — et vous transmet la demande.",
+      "faq_themes": [
+        "devis",
+        "délais et planning",
+        "matériaux et finitions",
+        "zone d'intervention"
+      ],
+      "repond": [
+        "Demande de devis transmise",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Devis réels",
+        "Planning de chantier"
+      ],
+      "hero": {
+        "titre": "Votre entreprise mérite une assistante qui répond aux demandes de devis pendant vos chantiers",
+        "accroche": "Mia présente vos prestations, vos matériaux et vos délais, puis vous transmet chaque demande de devis."
+      },
+      "questions_demo": [
+        "Comment obtenir un devis ?",
+        "Quels sont les délais et le planning de chantier ?",
+        "Quels matériaux et finitions proposez-vous ?"
+      ]
+    },
+    "vitrine": {
+      "nom": "Site vitrine",
+      "intention": "Présenter une activité de service qui se vend au contact, pas au panier : la page d'accueil doit surtout prouver qu'on existe et que le travail est réel, puis amener au formulaire de contact.",
+      "intention_reformulee": "Sur un site de services, le visiteur veut une preuve avant un contact : le travail est-il réel, sous quels délais, dans quelle zone. Mia tient ce rôle — elle répond avec les informations de votre site, à toute heure, et amène chaque visiteur au contact.",
+      "faq_themes": [
+        "déroulement d'une prestation",
+        "devis",
+        "délais",
+        "zone d'intervention"
+      ],
+      "repond": [
+        "Demande de devis transmise (prise de contact)",
+        "Réponse avec les informations de VOTRE site, 24 h sur 24",
+        "Escalade vers un humain quand la question dépasse sa connaissance du site"
+      ],
+      "execute": [
+        "Prise de consultation avec agenda",
+        "Devis et facturation automatisés"
+      ],
+      "hero": {
+        "titre": "Votre site mérite une assistante qui répond à vos visiteurs, jour et nuit",
+        "accroche": "Mia répond aux questions sur vos prestations, vos délais et votre zone d'intervention, avec les informations de VOTRE site — puis vous transmet chaque demande."
+      },
+      "questions_demo": [
+        "Comment se déroule une prestation, concrètement ?",
+        "Comment obtenir un devis ?",
+        "Quels sont vos délais d'intervention ?"
+      ]
+    }
+  },
+  "ordre": [
+    "restauration",
+    "hotellerie",
+    "ecommerce",
+    "immobilier",
+    "mlm",
+    "beaute",
+    "sante",
+    "education",
+    "evenementiel",
+    "tourisme",
+    "artisan",
+    "vitrine"
+  ]
+}
