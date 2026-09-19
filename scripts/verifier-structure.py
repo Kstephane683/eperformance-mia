@@ -37,7 +37,23 @@ INDEX = RACINE / "index.html"
 # SEO Open Graph…) visent alors l'ARCHIVE, qui reste le jalon de référence ; les
 # contrôles GLOBAUX (hex hors exception, emoji d'interface, empreinte eperf.css)
 # restent sur le dépôt entier. La constante ci-dessous distingue les deux modes.
-PAGE_ATTENTE = "page en préparation"
+PAGE_ATTENTE = "en préparation"  # casse : le body écrit « …en préparation. »
+
+
+def cible_lp() -> Path:
+    """Le fichier visé par les contrôles de CONTENU DE LP.
+
+    En état de passation (index.html = page d'attente), les contrôles de contenu
+    (8 sections, panneaux de démo, SEO de landing) portent sur l'ARCHIVE — le
+    jalon de référence reste vérifié, la page d'attente n'est pas jugée comme
+    une landing. SITE remettra un index.html complet, et la cible redeviendra
+    automatiquement index.html (PAGE_ATTENTE n'y sera plus).
+    """
+    if INDEX.is_file() and PAGE_ATTENTE in INDEX.read_text(encoding="utf-8"):
+        archive = RACINE / "docs" / "archive" / "index-lp-v1.html"
+        if archive.is_file():
+            return archive
+    return INDEX
 JSON_SECTEURS = RACINE / "contenu-sectoriel.json"
 LANDING_CSS = RACINE / "assets" / "css" / "landing.css"
 LANDING_JS = RACINE / "assets" / "js" / "landing.js"
@@ -135,11 +151,7 @@ def verifier_hex() -> None:
         for numero, ligne in enumerate(chemin.read_text(encoding="utf-8").splitlines(), 1):
             if HEX_A_TRADUIRE.search(ligne):
                 echec(f"{chemin.name}:{numero} : hex en dur (« zéro hex » non respecté)")
-    cible_lp = INDEX
-    if PAGE_ATTENTE in INDEX.read_text(encoding="utf-8"):
-        cible_lp = RACINE / "docs" / "archive" / "index-lp-v1.html"
-        ok(f"état de passation : les contrôles de LP visent l'archive ({cible_lp.relative_to(RACINE)})")
-    for numero, ligne in enumerate(cible_lp.read_text(encoding="utf-8").splitlines(), 1):
+    for numero, ligne in enumerate(INDEX.read_text(encoding="utf-8").splitlines(), 1):
         if HEX_A_TRADUIRE.search(ligne) and not HEX_OK.search(ligne):
             echec(f"index.html:{numero} : hex hors exception theme-color")
 
@@ -223,7 +235,7 @@ def verifier_empreinte() -> None:
 
 
 def main() -> int:
-    index = INDEX.read_text(encoding="utf-8") if INDEX.is_file() else ""
+    index = cible_lp().read_text(encoding="utf-8") if cible_lp().is_file() else ""
     if not index:
         echec("index.html absent")
     else:
