@@ -1,0 +1,25 @@
+name: Contrôles de la landing Mia
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Garde-fou secrets (leçon du 19/09 — dépôt public)
+        run: python3 scripts/verifier-secrets.py
+
+      - name: Empreinte eperf.css (copie conforme au canonique)
+        run: python3 scripts/verifier-empreinte.py
+
+      - name: Contrôles structurels (8 sections, 12 secteurs, C2, hex, Google Fonts, emoji, vidéos, SEO)
+        run: python3 scripts/verifier-structure.py
