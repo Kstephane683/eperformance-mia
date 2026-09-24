@@ -2,7 +2,7 @@
    Pré-cache la coquille ; l'API reste réseau (jamais cachée : les
    conversations sont des données personnelles). Le cache hors-ligne
    CHIFFRÉ des conversations récentes (conception §5) arrive en v1.1. */
-const CACHE = 'mia-app-v1';
+const CACHE = 'mia-app-v2';
 const COQUILLE = [
   '/app/', '/app/index.html', '/app/manifest.webmanifest',
   '/app/vendor/preact.module.js', '/app/vendor/hooks.module.js', '/app/vendor/htm.module.js',
