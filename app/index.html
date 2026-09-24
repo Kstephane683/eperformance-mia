@@ -210,7 +210,7 @@ function Connexion({ apresConnexion }) {
     setErreur(''); setCharge(true);
     try {
       const r = await fetch(AUTH + '/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password: mdp }) });
+        body: JSON.stringify({ email: email, password: mdp }) });
       const c = await r.json().catch(() => ({}));
       if (r.status === 401 && c.detail === '2fa_requise') { setErreur(''); setEtape('tfa'); setCharge(false); return; }
       if (!r.ok) { setErreur(c.detail || 'Identifiants incorrects'); setCharge(false); return; }
@@ -224,7 +224,7 @@ function Connexion({ apresConnexion }) {
     setErreur(''); setCharge(true);
     try {
       const r = await fetch(AUTH + '/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password: mdp, totp_code: code }) });
+        body: JSON.stringify({ email: email, password: mdp, totp_code: code }) });
       const c = await r.json().catch(() => ({}));
       if (!r.ok) { setErreur(c.detail || 'Code invalide'); setCharge(false); return; }
       jeton.ecrire(c.access_token); suivi('app_open');
