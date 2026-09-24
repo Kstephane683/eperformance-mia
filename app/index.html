@@ -6,8 +6,8 @@
 <meta name="theme-color" content="var(--fond)">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- Icône d'accueil iOS : l'iPhone l'exige par <link>, le manifeste ne suffit
-     pas (c'est le défaut « app sans identité visuelle » constaté par le
-     propriétaire). Identité ePerformance — logo eP noir + or. -->
+     pas. Identité ePerformance — logo eP noir + or (posé par CHATBOT le 25/09,
+     ⚠️ geste minimal documenté au journal — le dépôt servi porte le commit). -->
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icones/mia-192.png">
 <title>Mia</title>
@@ -80,6 +80,7 @@ h1.titre{font-family:var(--police-titres);font-size:30px;font-weight:600;margin-
 .champ{margin-bottom:14px}
 .champ label{display:block;font-size:12.5px;font-weight:600;color:var(--texte-doux);margin-bottom:6px}
 .champ input{width:100%;padding:12px 14px;border-radius:var(--p-rayon-sm);border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px}
+.champ-input{width:100%;padding:12px 14px;border-radius:var(--p-rayon-sm);border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px;font-family:inherit}
 .bouton{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:var(--p-rayon-pilule);background:var(--accent);color:var(--sur-accent);font-size:15px;font-weight:600;transition:background-color var(--p-duree) var(--p-courbe)}
 .bouton:hover{background:var(--accent-appuye)}
 .bouton:disabled{opacity:.6}
@@ -183,6 +184,7 @@ async function viderFile() {
 if (!localStorage.getItem('mia-installation')) localStorage.setItem('mia-installation', crypto.randomUUID());
 
 /* ================= utilitaires ================= */
+const estAdmin = moi => (moi?.role_client || '') === 'client_admin';
 const initiale = n => (n || '?').trim().charAt(0).toUpperCase();
 const heureCourte = iso => iso ? new Date(iso).toLocaleTimeString('fr', { hour: '2-digit', minute: '2-digit' }) : '';
 const jourCourte = iso => iso ? new Date(iso).toLocaleDateString('fr', { day: 'numeric', month: 'short' }) : '';
@@ -193,6 +195,7 @@ const Icone = {
   cloche: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
   compte: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`,
   retour: () => html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>`,
+  enseigner: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a4.5 4.5 0 0 0-4.5 4.5c0 1.2.5 2.3 1.3 3.1-.5.6-.8 1.4-.8 2.4a4 4 0 0 0 4 4h.5V21"/><path d="M12 3a4.5 4.5 0 0 1 4.5 4.5c0 1.2-.5 2.3-1.3 3.1.5.6.8 1.4.8 2.4a4 4 0 0 1-4 4"/></svg>`,
   envoyer: () => html`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
 };
 
@@ -287,6 +290,7 @@ function Accueil({ moi, aller }) {
       <div class="kpi"><div class="v">${analytics ? Math.round((analytics.conversion_rate || 0) * 100) + '%' : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">taux de capture</div></div>
       <div class="kpi"><div class="v">${analytics ? analytics.total_messages : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">messages</div></div>
     </div>
+    ${estAdmin(moi) && html`<button class="bouton" style="margin-bottom:14px" onClick=${() => aller('entrainement')}><${Icone.enseigner} /> Entraîner Mia — réponses officielles</button>`}
     <h1 class="titre-section" style="font-size:20px">Dernières conversations</h1>
     <p class="sous-titre"><button class="retour" style="margin:0" onClick=${() => aller('conversations')}>Tout voir</button></p>
     ${convs === null && html`<div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px"/>`}
@@ -405,6 +409,125 @@ function Notifications({ moi }) {
       </div>`)}`;
 }
 
+/* ================= écran Entraînement (F + G, lot 4 bis) ================= */
+/* Le propriétaire déclare le MÉTIER de son site (G — source canonique du
+   noyau) et ENSEIGNE ses questions/réponses et documents (F — routes client
+   /sites/{site}/connaissances). L'effet est immédiat : Mia s'appuie sur ces
+   réponses EN PRIORITÉ dès la prochaine conversation. Écriture :
+   client_admin ; lecture : tout compte client. */
+function Entrainement({ moi, revenir }) {
+  const site = moi.sites[0]?.site_id || '';
+  const estAdmin = moi.role_client === 'client_admin';
+
+  const [secteur, setSecteur] = useState(null);
+  const [disponibles, setDisponibles] = useState([]);
+  const [choix, setChoix] = useState('');
+  const [items, setItems] = useState(null);
+  const [type, setType] = useState('qr');
+  const [question, setQuestion] = useState('');
+  const [reponse, setReponse] = useState('');
+  const [contenu, setContenu] = useState('');
+  const [source, setSource] = useState('');
+  const [message, setMessage] = useState('');
+  const [erreur, setErreur] = useState('');
+  const [charge, setCharge] = useState(false);
+
+  const recharger = useCallback(() => {
+    api('/sites/' + site + '/secteur').then(d => { setSecteur(d.secteur); setDisponibles(d.secteurs_disponibles || []); }).catch(() => {});
+    api('/sites/' + site + '/connaissances').then(d => setItems(d.items || [])).catch(() => setItems([]));
+  }, [site]);
+  useEffect(() => { recharger(); suivi('screen_view', { ecran: 'entrainement' }); }, [recharger]);
+
+  async function enregistrerMetier() {
+    setMessage(''); setErreur('');
+    try {
+      const d = await api('/sites/' + site + '/secteur', { corps: { secteur: choix || null }, methode: 'PUT' });
+      setSecteur(d.secteur); setMessage('Métier enregistré : Mia adapte son ton et son vocabulaire.');
+    } catch (e) { setErreur(e.detail || 'Enregistrement impossible.'); }
+  }
+
+  async function enseigner() {
+    setMessage(''); setErreur(''); setCharge(true);
+    const corps = { type };
+    if (type === 'qr') { corps.question = question; corps.reponse = reponse; }
+    else { corps.contenu = contenu; if (source) corps.source_url = source; }
+    try {
+      await api('/sites/' + site + '/connaissances', { corps });
+      setQuestion(''); setReponse(''); setContenu(''); setSource('');
+      setMessage('Enseigné : Mia s\'appuie sur cette réponse dès la prochaine conversation.');
+      recharger();
+    } catch (e) { setErreur(e.detail || 'Ajout impossible.'); }
+    setCharge(false);
+  }
+
+  async function archiver(id) {
+    setMessage(''); setErreur('');
+    try {
+      await api('/sites/' + site + '/connaissances/' + id, { methode: 'DELETE' });
+      setItems(l => l.filter(i => i.id !== id));
+      setMessage('Connaissance archivée : Mia ne la cite plus.');
+    } catch (e) { setErreur(e.detail || 'Archivage impossible.'); }
+  }
+
+  return html`
+    <button class="retour" onClick=${revenir}><${Icone.retour} /> Accueil</button>
+    <h1 class="titre-section">Entraînement</h1>
+    <p class="sous-titre">Dites à Mia ce qu'elle doit répondre — elle écoute en priorité.</p>
+    ${message && html`<div class="info">${message}</div>`}
+    ${erreur && html`<div class="info" style="background:color-mix(in srgb,var(--erreur) 10%,transparent);border-color:color-mix(in srgb,var(--erreur) 30%,transparent);color:var(--erreur)">${erreur}</div>`}
+
+    <div class="kpi" style="margin-bottom:14px">
+      <h3 style="margin:0 0 6px;font-size:15px;font-weight:600">Métier de votre site</h3>
+      <p style="font-size:12.5px;color:var(--texte-discret);margin:0 0 10px">
+        ${secteur ? 'Déclaré : ' + secteur + '. Mia adapte son ton et son vocabulaire au métier.' : 'Non déclaré : choisissez le métier de votre site.'}
+      </p>
+      <div class="champ" style="display:flex;gap:8px;margin-bottom:0">
+        <select class="champ-input" style="flex:1" value=${secteur || ''} onChange=${e => setChoix(e.target.value)} disabled=${!estAdmin}>
+          <option value="">— Choisir un métier —</option>
+          ${disponibles.map(s => html`<option key=${s} value=${s} selected=${s === secteur}>${s}</option>`)}
+        </select>
+        ${estAdmin && html`<button class="bouton" style="width:auto;padding:10px 16px" onClick=${enregistrerMetier}>Enregistrer</button>`}
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;font-weight:600;margin:0 0 4px">Vos réponses officielles</h3>
+    <p style="font-size:12.5px;color:var(--texte-discret);margin:0 0 10px">
+      Une question d'un visiteur qui ressemble à l'une de vos réponses ? Mia utilise la vôtre.
+    </p>
+
+    ${items === null && html`<div class="squelette" style="height:56px;margin-bottom:9px"/>`}
+    ${items && items.length === 0 && html`<div class="etat-vide" style="padding:24px 16px"><p style="margin:0">Aucune réponse enseignée pour l'instant. Ajoutez la première ci-dessous.</p></div>`}
+    ${items && items.map(i => html`
+      <div key=${i.id} class="conv" style="margin-bottom:8px">
+        <div class="avatar" aria-hidden="true">${i.type === 'qr' ? 'Q' : 'D'}</div>
+        <div class="c" style="flex:1">
+          <div class="l1"><b>${i.question || 'Document'}</b><span style="font-size:11px;color:var(--texte-discret)">${i.type === 'qr' ? 'Question/Réponse' : 'Document'}</span></div>
+          <p class="ap" style="white-space:normal">${(i.reponse || i.contenu || '').slice(0, 120)}${(i.reponse || i.contenu || '').length > 120 ? '…' : ''}</p>
+        </div>
+        ${estAdmin && html`<button class="retour" style="margin:0" onClick=${() => archiver(i.id)}>Archiver</button>`}
+      </div>`)}
+
+    ${estAdmin && html`
+      <div class="carte-connexion" style="max-width:none;margin:14px 0 0;padding:18px 16px">
+        <div class="champ" style="display:flex;gap:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="radio" name="type-ens" checked=${type === 'qr'} onChange=${() => setType('qr')} /> Question / Réponse</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="radio" name="type-ens" checked=${type === 'texte'} onChange=${() => setType('texte')} /> Document</label>
+        </div>
+        ${type === 'qr' && html`
+          <div class="champ"><label for="ens-q">Question que les visiteurs posent</label>
+            <input id="ens-q" class="champ-input" value=${question} onInput=${e => setQuestion(e.target.value)} placeholder="ex. : Livrez-vous à Abidjan ?" maxlength="500" /></div>
+          <div class="champ"><label for="ens-r">Votre réponse officielle</label>
+            <textarea id="ens-r" class="champ-input" rows="3" value=${reponse} onInput=${e => setReponse(e.target.value)} placeholder="La réponse que Mia doit donner" maxlength="4000"></textarea></div>`}
+        ${type === 'texte' && html`
+          <div class="champ"><label for="ens-c">Document — ce que Mia doit connaître</label>
+            <textarea id="ens-c" class="champ-input" rows="5" value=${contenu} onInput=${e => setContenu(e.target.value)} maxlength="20000"></textarea></div>
+          <div class="champ"><label for="ens-s">URL de la source (facultatif)</label>
+            <input id="ens-s" class="champ-input" type="url" value=${source} onInput=${e => setSource(e.target.value)} maxlength="500" /></div>`}
+        <button class="bouton" disabled=${charge} onClick=${enseigner}>${charge ? 'Envoi…' : 'Enseigner à Mia'}</button>
+      </div>`}
+    ${!estAdmin && html`<p class="sous-titre" style="margin-top:12px">L'écriture est réservée au rôle client_admin de votre site.</p>`}`;
+}
+
 /* ================= écran Compte ================= */
 function Compte({ moi, deconnexion }) {
   const [consent, setConsent] = useState(localStorage.getItem('mia-consent') !== '0');
@@ -476,6 +599,7 @@ function App() {
         ${ecran === 'conversation' && convoOuverte && html`<${ConversationDetail} moi=${moi} convo=${convoOuverte} revenir=${() => setEcran('conversations')} />`}
         ${ecran === 'notifications' && html`<${Notifications} moi=${moi} />`}
         ${ecran === 'compte' && html`<${Compte} moi=${moi} deconnexion=${deconnexion} />`}
+        ${ecran === 'entrainement' && html`<${Entrainement} moi=${moi} revenir=${() => setEcran('accueil')} />`}
       </main>
       <nav class="nav-basse" aria-label="Navigation principale">
         <button class="onglet" aria-current=${ecran === 'accueil' ? 'page' : undefined} onClick=${() => setEcran('accueil')}><${Icone.accueil} /> Accueil</button>
