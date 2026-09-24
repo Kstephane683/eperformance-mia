@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="var(--fond)">
 <meta name="description" content="Mia répond à vos clients sur votre site, jour et nuit, dans votre métier. Vous recevez les demandes et prenez la main quand vous voulez.">
-<link rel="canonical" href="https://mia.eperformance.pro/">
 <title>Mia — l'assistante qui répond pour votre métier</title>
 <style>
 /* ================================================================
@@ -59,10 +58,10 @@
   --succes: var(--p-etat-succes-sombre, #6fcf8a);
   color-scheme: dark;
 }
-@font-face { font-family:'DM Sans'; src:url('assets/fonts/dm-sans-400.woff2') format('woff2'); font-weight:400; font-display:swap; }
-@font-face { font-family:'DM Sans'; src:url('assets/fonts/dm-sans-500.woff2') format('woff2'); font-weight:500; font-display:swap; }
-@font-face { font-family:'DM Sans'; src:url('assets/fonts/dm-sans-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
-@font-face { font-family:'Cormorant Garamond'; src:url('assets/fonts/cormorant-garamond-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-400.woff2') format('woff2'); font-weight:400; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-500.woff2') format('woff2'); font-weight:500; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
+@font-face { font-family:'Cormorant Garamond'; src:url('polices/cormorant-garamond-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:var(--police-corps); background:var(--fond); color:var(--texte); line-height:1.6;
@@ -641,11 +640,14 @@ function choisirSecteur(cle) {
 rendreSelecteur(document.getElementById('selecteur'));
 rendreSelecteur(document.getElementById('selecteur-final'));
 
-/* Lien « Gerez-la » — URL_APPLICATION reste null tant que l'app n'est pas deployee.
-   A la livraison (PWA/TWA) : poser l'URL ici (ex. "https://app.mia…"), le lien
-   quitte l'ancre LP et ouvre l'application. Documente dans CONCEPTION-LP.md §8. */
-const URL_APPLICATION = null;
+/* L'app est servie : tous les CTA d'installation ouvrent l'application. */
+const URL_APPLICATION = "/app/";
 if (URL_APPLICATION) {
+  document.querySelectorAll('a[href="#app"]').forEach(a => {
+    a.setAttribute('href', URL_APPLICATION);
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener');
+  });
   const lien = document.querySelector('.barre .deja');
   lien.setAttribute('href', URL_APPLICATION);
   lien.setAttribute('target', '_blank');

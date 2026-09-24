@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="var(--fond)">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Mia</title>
+<style>
+/* ================================================================
+   APP MIA v1 — l'application réelle, installable.
+   Stack : Preact 10 + hooks + htm, vendorisés (zéro CDN au runtime).
+   Données : API client v1 en production (contrat API-CLIENT-V1.md,
+   le code fait foi). Jetons : primitives + sémantique du noyau N1.
+   ================================================================ */
+:root {
+  --p-blanc:#fff; --p-neutre-0:#fdfcfa; --p-neutre-1:#faf8f4; --p-neutre-2:#f7f5f1;
+  --p-neutre-3:#e5e1d9; --p-neutre-4:#d5cfc3; --p-neutre-5:#b0aaa0; --p-neutre-6:#8f8a7e;
+  --p-neutre-7:#6a676f; --p-neutre-8:#45424b; --p-neutre-9:#16151a;
+  --p-sombre-0:#08080c; --p-sombre-1:#0c0c10; --p-sombre-2:#101014; --p-sombre-3:#14141a;
+  --p-sombre-4:#1c1c22; --p-sombre-5:#282830; --p-sombre-6:#646470; --p-sombre-7:#8b8b96;
+  --p-sombre-8:#b0aaa0; --p-sombre-9:#edeae3;
+  --p-accent-clair:#856b37; --p-accent-sombre:#c9a96e;
+  --p-accent-appuye-clair:#735d32; --p-accent-appuye-sombre:#e2c07a;
+  --p-etat-succes-clair:#12703f; --p-etat-succes-sombre:#6fcf8a;
+  --p-etat-erreur-clair:#a8302f; --p-etat-erreur-sombre:#e07070;
+  --p-etat-info-clair:#2b5a80; --p-etat-info-sombre:#8ab8e6;
+  --p-rayon-sm:12px; --p-rayon-md:20px; --p-rayon-lg:28px; --p-rayon-pilule:999px;
+  --p-duree:300ms; --p-courbe:cubic-bezier(.16,1,.3,1);
+  --fond:var(--p-neutre-0); --fond-2:var(--p-neutre-2); --surface:var(--p-blanc);
+  --surface-2:var(--p-neutre-1); --texte:var(--p-neutre-9); --texte-doux:var(--p-neutre-8);
+  --texte-discret:var(--p-neutre-7); --accent:var(--p-accent-clair);
+  --accent-appuye:var(--p-accent-appuye-clair);
+  --accent-trace:color-mix(in srgb,var(--p-accent-clair) 7%,transparent);
+  --accent-filet:color-mix(in srgb,var(--p-accent-clair) 22%,transparent);
+  --sur-accent:var(--p-blanc); --filet:var(--p-neutre-3); --filet-controle:var(--p-neutre-6);
+  --succes:var(--p-etat-succes-clair); --erreur:var(--p-etat-erreur-clair); --info:var(--p-etat-info-clair);
+  --police-titres:'Cormorant Garamond',Georgia,serif; --police-corps:system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+}
+[data-theme=dark] {
+  --fond:var(--p-sombre-0); --fond-2:var(--p-sombre-1); --surface:var(--p-sombre-2);
+  --surface-2:var(--p-sombre-3); --texte:var(--p-sombre-9); --texte-doux:var(--p-sombre-8);
+  --texte-discret:var(--p-sombre-7); --accent:var(--p-accent-sombre);
+  --accent-appuye:var(--p-accent-appuye-sombre);
+  --accent-trace:color-mix(in srgb,var(--p-accent-sombre) 8%,transparent);
+  --accent-filet:color-mix(in srgb,var(--p-accent-sombre) 22%,transparent);
+  --sur-accent:#0a0a0e; --filet:var(--p-sombre-4); --filet-controle:var(--p-sombre-6);
+  --succes:var(--p-etat-succes-sombre); --erreur:var(--p-etat-erreur-sombre); --info:var(--p-etat-info-sombre);
+  color-scheme:dark;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--police-corps);background:var(--fond);color:var(--texte);min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.contenu{flex:1;padding:16px 16px 92px}
+.squelette{border-radius:8px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--filet) 50%,var(--surface-2) 75%);background-size:200% 100%;animation:ondulation 1.2s infinite;height:14px}
+@keyframes ondulation{from{background-position:200% 0}to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}.squelette{animation:none}}
+
+/* entête */
+.entete{display:flex;align-items:center;gap:10px;padding:16px 16px 12px;border-bottom:1px solid var(--filet)}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;font-family:var(--police-titres);font-size:22px;font-weight:600}
+.entete .t{flex:1;min-width:0}
+.entete .t b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.entete .t small{font-size:12px;color:var(--texte-discret)}
+select.sites{background:var(--surface-2);border:1px solid var(--filet-controle);border-radius:var(--p-rayon-pilule);color:var(--texte-doux);font-size:12px;padding:7px 10px;max-width:150px}
+
+/* connexions */
+.carte-connexion{max-width:400px;margin:10vh auto 0;padding:28px 24px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-lg)}
+h1.titre{font-family:var(--police-titres);font-size:30px;font-weight:600;margin-bottom:4px}
+.sous{font-size:13.5px;color:var(--texte-discret);margin-bottom:22px;line-height:1.5}
+.champ{margin-bottom:14px}
+.champ label{display:block;font-size:12.5px;font-weight:600;color:var(--texte-doux);margin-bottom:6px}
+.champ input{width:100%;padding:12px 14px;border-radius:var(--p-rayon-sm);border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px}
+.bouton{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:var(--p-rayon-pilule);background:var(--accent);color:var(--sur-accent);font-size:15px;font-weight:600;transition:background-color var(--p-duree) var(--p-courbe)}
+.bouton:hover{background:var(--accent-appuye)}
+.bouton:disabled{opacity:.6}
+.erreur{padding:11px 14px;border-radius:var(--p-rayon-sm);background:color-mix(in srgb,var(--erreur) 10%,transparent);border:1px solid color-mix(in srgb,var(--erreur) 30%,transparent);color:var(--erreur);font-size:13px;margin-bottom:14px}
+.info{padding:11px 14px;border-radius:var(--p-rayon-sm);background:color-mix(in srgb,var(--info) 10%,transparent);border:1px solid color-mix(in srgb,var(--info) 30%,transparent);color:var(--info);font-size:13px;margin-bottom:14px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-md);padding:16px}
+.kpi .v{font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.kpi.insistant{border-color:var(--accent-filet);background:var(--accent-trace)}
+.kpi.insistant .v{color:var(--accent-appuye)}
+.kpi .l{font-size:11.5px;color:var(--texte-discret);margin-top:5px}
+.titre-section{font-family:var(--police-titres);font-size:25px;font-weight:600;margin:4px 0 2px}
+.sous-titre{font-size:12.5px;color:var(--texte-discret);margin-bottom:14px}
+
+/* conversations */
+.conv{display:flex;gap:11px;padding:13px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-md);margin-bottom:9px;width:100%;text-align:left;transition:border-color var(--p-duree)}
+.conv.non-lu{border-left:3px solid var(--accent)}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--surface-2);border:1px solid var(--filet);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--texte-doux);flex-shrink:0}
+.conv .c{flex:1;min-width:0}
+.conv .l1{display:flex;justify-content:space-between;gap:8px}
+.conv .l1 b{font-size:14px}
+.conv .l1 time{font-size:11px;color:var(--texte-discret)}
+.conv .ap{font-size:13px;color:var(--texte-doux);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.etq{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:var(--p-rayon-pilule);margin-top:6px;margin-right:5px}
+.etq.lead{color:var(--succes);background:color-mix(in srgb,var(--succes) 10%,transparent);border:1px solid color-mix(in srgb,var(--succes) 30%,transparent)}
+.etq.esc{color:var(--info);background:color-mix(in srgb,var(--info) 10%,transparent);border:1px solid color-mix(in srgb,var(--info) 30%,transparent)}
+
+/* fil messages */
+.fil{display:flex;flex-direction:column;gap:9px;padding:14px 0}
+.bulle{max-width:82%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.45}
+.bulle.mia{align-self:flex-start;background:var(--surface-2);border:1px solid var(--filet);border-bottom-left-radius:5px}
+.bulle.visiteur{align-self:flex-end;background:var(--accent);color:var(--sur-accent);border-bottom-right-radius:5px}
+.bulle .qui{display:block;font-size:10px;opacity:.7;margin-top:4px}
+.composeur{display:flex;gap:8px;padding:12px 0}
+.composeur input{flex:1;padding:12px 16px;border-radius:var(--p-rayon-pilule);border:1px solid var(--filet-controle);background:var(--surface);color:var(--texte);font-size:14px}
+.composeur .envoyer{width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;flex-shrink:0}
+.bandeau-main{display:flex;gap:8px;margin-bottom:12px}
+.bandeau-main .bouton{width:auto;flex:1;padding:10px}
+
+/* nav basse */
+.nav-basse{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;height:78px;background:var(--surface);border-top:1px solid var(--filet);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom));z-index:20}
+.onglet{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--texte-discret);font-size:11px;font-weight:500;padding:8px 0}
+.onglet[aria-current=page]{color:var(--accent);font-weight:600}
+.onglet .pastille{min-width:16px;height:16px;border-radius:var(--p-rayon-pilule);background:var(--accent-appuye);color:var(--sur-accent);font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;margin-left:4px}
+.etat-vide{text-align:center;padding:48px 20px}
+.etat-vide h3{font-family:var(--police-titres);font-size:22px;font-weight:600;margin-bottom:6px}
+.etat-vide p{font-size:13.5px;color:var(--texte-discret);max-width:280px;margin:0 auto 16px;line-height:1.5}
+.retour{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:13.5px;font-weight:600;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="racine"></div>
+<script type="importmap">
+{ "imports": { "preact": "./vendor/preact.module.js", "preact/hooks": "./vendor/hooks.module.js" } }
+</script>
+<script type="module">
+import { h, render } from './vendor/preact.module.js';
+import { useState, useEffect, useRef, useCallback } from './vendor/hooks.module.js';
+import htm from './vendor/htm.module.js';
+const html = htm.bind(h);
+
+/* ================= API — contrat API-CLIENT-V1, le code fait foi ================= */
+const API = '/api/client/v1';
+const jeton = {
+  lire: () => localStorage.getItem('mia-jeton'),
+  ecrire: (v, jours) => localStorage.setItem('mia-jeton', v),
+  effacer: () => localStorage.removeItem('mia-jeton'),
+};
+async function api(chemin, options = {}) {
+  const entetes = { ...(options.headers || {}) };
+  if (options.corps !== undefined) entetes['Content-Type'] = 'application/json';
+  const j = jeton.lire();
+  if (j) entetes['Authorization'] = 'Bearer ' + j;
+  const r = await fetch(API + chemin, {
+    method: options.methode || (options.corps !== undefined ? 'POST' : 'GET'),
+    headers: entetes,
+    body: options.corps !== undefined ? JSON.stringify(options.corps) : undefined,
+  });
+  if (r.status === 401 && !chemin.includes('/auth/')) { jeton.effacer(); location.reload(); throw { statut: 401 }; }
+  const corps = await r.json().catch(() => ({}));
+  if (!r.ok) throw { statut: r.status, ...corps };
+  return corps;
+}
+
+/* ================= suivi d'usage — local-first, event_id UUID ================= */
+const file = JSON.parse(localStorage.getItem('mia-file') || '[]');
+function suivi(type, metadata = {}) {
+  file.push({ event_id: crypto.randomUUID(), type, date_evenement: new Date().toISOString(), metadata });
+  localStorage.setItem('mia-file', JSON.stringify(file.slice(-500)));
+  viderFile();
+}
+async function viderFile() {
+  if (!file.length || !jeton.lire()) return;
+  const lot = file.splice(0, 100);
+  try { await api('/analytics/event', { corps: { installation_id: localStorage.getItem('mia-installation'), evenements: lot } }); }
+  catch { file.unshift(...lot); localStorage.setItem('mia-file', JSON.stringify(file)); }
+}
+if (!localStorage.getItem('mia-installation')) localStorage.setItem('mia-installation', crypto.randomUUID());
+
+/* ================= utilitaires ================= */
+const initiale = n => (n || '?').trim().charAt(0).toUpperCase();
+const heureCourte = iso => iso ? new Date(iso).toLocaleTimeString('fr', { hour: '2-digit', minute: '2-digit' }) : '';
+const jourCourte = iso => iso ? new Date(iso).toLocaleDateString('fr', { day: 'numeric', month: 'short' }) : '';
+const relatif = iso => { if (!iso) return ''; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 60 ? `${m} min` : m < 1440 ? `${Math.round(m/60)} h` : jourCourte(iso); };
+const Icone = {
+  accueil: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>`,
+  conv: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  cloche: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+  compte: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`,
+  retour: () => html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>`,
+  envoyer: () => html`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
+};
+
+/* ================= écran Connexion (2FA + changement forcé) ================= */
+function Connexion({ apresConnexion }) {
+  const [etape, setEtape] = useState('identifiants'); // identifiants | tfa | motdepasse
+  const [email, setEmail] = useState(''); const [mdp, setMdp] = useState(''); const [code, setCode] = useState('');
+  const [erreur, setErreur] = useState(''); const [charge, setCharge] = useState(false);
+  const [tokenTemp, setTokenTemp] = useState('');
+
+  async function seConnecter() {
+    setErreur(''); setCharge(true);
+    try {
+      const r = await fetch('/api/auth/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: email, password: mdp }) });
+      const c = await r.json().catch(() => ({}));
+      if (r.status === 401 && c.detail === '2fa_requise') { setErreur(''); setEtape('tfa'); setCharge(false); return; }
+      if (!r.ok) { setErreur(c.detail || 'Identifiants incorrects'); setCharge(false); return; }
+      jeton.ecrire(c.access_token);
+      suivi('app_open');
+      if (c.must_change_password) { setTokenTemp(c.access_token); setEtape('motdepasse'); setCharge(false); return; }
+      apresConnexion();
+    } catch { setErreur('Serveur injoignable — réessayez'); setCharge(false); }
+  }
+  async function verifier2FA() {
+    setErreur(''); setCharge(true);
+    try {
+      const r = await fetch('/api/auth/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: email, password: mdp, totp_code: code }) });
+      const c = await r.json().catch(() => ({}));
+      if (!r.ok) { setErreur(c.detail || 'Code invalide'); setCharge(false); return; }
+      jeton.ecrire(c.access_token); suivi('app_open');
+      if (c.must_change_password) { setTokenTemp(c.access_token); setEtape('motdepasse'); setCharge(false); return; }
+      apresConnexion();
+    } catch { setErreur('Serveur injoignable'); setCharge(false); }
+  }
+  async function changerMdp() {
+    setErreur(''); setCharge(true);
+    try {
+      const r = await fetch(API + '/password', { method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (tokenTemp || jeton.lire()) },
+        body: JSON.stringify({ ancien_mot_de_passe: mdp, nouveau_mot_de_passe: code }) });
+      const c = await r.json().catch(() => ({}));
+      if (!r.ok) { setErreur(c.detail || 'Mot de passe refusé (8 caractères minimum)'); setCharge(false); return; }
+      setCharge(false); apresConnexion();
+    } catch { setErreur('Serveur injoignable'); setCharge(false); }
+  }
+
+  return html`
+    <div class="carte-connexion">
+      <h1 class="titre">Mia</h1>
+      <p class="sous">${etape === 'identifiants' && 'Connectez-vous pour gérer le chatbot de votre site.'}
+         ${etape === 'tfa' && 'Votre compte est protégé par la double authentification. Saisissez le code de votre application d\u2019authentification.'}
+         ${etape === 'motdepasse' && 'Votre mot de passe est temporaire : choisissez le vôtre pour continuer (8 caractères minimum).'}</p>
+      ${erreur && html`<div class="erreur" role="alert">${erreur}</div>`}
+      ${etape === 'identifiants' && html`
+        <div class="champ"><label for="email">E-mail</label>
+          <input id="email" type="email" value=${email} onInput=${e => setEmail(e.target.value)} autocomplete="username" /></div>
+        <div class="champ"><label for="mdp">Mot de passe</label>
+          <input id="mdp" type="password" value=${mdp} onInput=${e => setMdp(e.target.value)} onKeyDown=${e => e.key === 'Enter' && seConnecter()} autocomplete="current-password" /></div>
+        <button class="bouton" onClick=${seConnecter} disabled=${charge}>${charge ? 'Connexion…' : 'Se connecter'}</button>`}
+      ${etape === 'tfa' && html`
+        <div class="champ"><label for="code">Code à 6 chiffres</label>
+          <input id="code" inputmode="numeric" maxlength="6" value=${code} onInput=${e => setCode(e.target.value)} onKeyDown=${e => e.key === 'Enter' && verifier2FA()} /></div>
+        <button class="bouton" onClick=${verifier2FA} disabled=${charge}>${charge ? 'Vérification…' : 'Valider'}</button>`}
+      ${etape === 'motdepasse' && html`
+        <div class="champ"><label for="nmdp">Nouveau mot de passe</label>
+          <input id="nmdp" type="password" value=${code} onInput=${e => setCode(e.target.value)} onKeyDown=${e => e.key === 'Enter' && changerMdp()} /></div>
+        <button class="bouton" onClick=${changerMdp} disabled=${charge}>${charge ? 'Enregistrement…' : 'Enregistrer et continuer'}</button>`}
+    </div>`;
+}
+
+/* ================= écran Accueil ================= */
+function Accueil({ moi, aller }) {
+  const [site, setSite] = useState(moi.sites[0]?.site_id || '');
+  const [analytics, setAnalytics] = useState(null);
+  const [convs, setConvs] = useState(null);
+  const [erreur, setErreur] = useState('');
+  useEffect(() => { if (!site) return;
+    api(`/sites/${site}/analytics?period_days=7`).then(setAnalytics).catch(e => setErreur(e.detail || 'Analytics indisponibles'));
+    api(`/sites/${site}/conversations?page_size=4`).then(c => setConvs(c.conversations)).catch(e => setErreur(e.detail || ''));
+    suivi('screen_view', { ecran: 'accueil' });
+  }, [site]);
+  const leads = analytics ? analytics.total_leads_captured : null;
+  return html`
+    <h1 class="titre-section">Bonjour ${moi.nom?.split(' ')[0] || ''}</h1>
+    <p class="sous-titre">Voici ce que Mia fait sur votre site.</p>
+    ${erreur && html`<div class="info">${erreur}</div>`}
+    <div class="kpis">
+      <div class="kpi"><div class="v">${analytics ? analytics.total_conversations : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">conversations · 7 jours</div></div>
+      <div class="kpi insistant"><div class="v">${leads === null ? html`<div class="squelette" style="width:50px"/>` : leads}</div><div class="l">leads capturés</div></div>
+      <div class="kpi"><div class="v">${analytics ? Math.round((analytics.conversion_rate || 0) * 100) + '%' : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">taux de capture</div></div>
+      <div class="kpi"><div class="v">${analytics ? analytics.total_messages : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">messages</div></div>
+    </div>
+    <h1 class="titre-section" style="font-size:20px">Dernières conversations</h1>
+    <p class="sous-titre"><button class="retour" style="margin:0" onClick=${() => aller('conversations')}>Tout voir</button></p>
+    ${convs === null && html`<div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px"/>`}
+    ${convs && convs.length === 0 && html`<div class="etat-vide"><h3>Aucune conversation pour l'instant</h3><p>Mia répond dès qu'un visiteur pose une question sur votre site.</p></div>`}
+    ${convs && convs.map(c => html`<${CarteConv} key=${c.conversation_id} c=${c} ouvrir=${() => aller('conversation', c)} />`)}`;
+}
+
+function CarteConv({ c, ouvrir }) {
+  return html`
+    <button class="conv ${c.non_lu ? 'non-lu' : ''}" onClick=${ouvrir}>
+      <div class="avatar">${initiale(c.visitor_name)}</div>
+      <div class="c">
+        <div class="l1"><b>${c.visitor_name || 'Visiteur'}</b><time>${relatif(c.last_message_at)}</time></div>
+        <p class="ap">${c.last_message || ''}</p>
+        ${c.lead_captured && html`<span class="etq lead">lead</span>`}
+        ${c.human_active && html`<span class="etq esc">prise en main</span>`}
+      </div>
+    </button>`;
+}
+
+/* ================= écran Conversations ================= */
+function Conversations({ moi, ouvrirConversation }) {
+  const [site, setSite] = useState(moi.sites[0]?.site_id || '');
+  const [liste, setListe] = useState(null); const [filtre, setFiltre] = useState('');
+  const [total, setTotal] = useState(0);
+  useEffect(() => { if (!site) return;
+    const q = filtre ? `&${filtre}=true` : '';
+    api(`/sites/${site}/conversations?page_size=20${q}`).then(c => { setListe(c.conversations); setTotal(c.total); }).catch(() => setListe([]));
+    suivi('screen_view', { ecran: 'conversations' });
+  }, [site, filtre]);
+  return html`
+    <h1 class="titre-section">Conversations</h1>
+    <p class="sous-titre">Boîte unifiée — ${total} au total.</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto">
+      ${[['', 'Toutes'], ['non_lu', 'Non lues'], ['escalade', 'Escaladées'], ['avec_lead', 'Avec lead']].map(([v, l]) =>
+        html`<button key=${v} onClick=${() => setFiltre(v)}
+          style=${'padding:8px 14px;border-radius:999px;border:1px solid ' + (filtre === v ? 'var(--accent)' : 'var(--filet-controle)') + ';background:' + (filtre === v ? 'var(--accent)' : 'var(--surface)') + ';color:' + (filtre === v ? 'var(--sur-accent)' : 'var(--texte-doux)') + ';font-size:12.5px;font-weight:500;white-space:nowrap'}>${l}</button>`)}
+    </div>
+    ${liste === null && html`<div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px;margin-bottom:9px"/>`}
+    ${liste && liste.length === 0 && html`<div class="etat-vide"><h3>Rien sous ce filtre</h3><p>Essayez « Toutes » — Mia continue de répondre sur votre site.</p></div>`}
+    ${liste && liste.map(c => html`<${CarteConv} key=${c.conversation_id} c=${c} ouvrir=${() => ouvrirConversation(c)} />`)}`;
+}
+
+/* ================= écran Détail + prise en main ================= */
+function ConversationDetail({ moi, convo, revenir }) {
+  const site = moi.sites[0]?.site_id;
+  const [detail, setDetail] = useState(null);
+  const [texte, setTexte] = useState(''); const [charge, setCharge] = useState(false);
+  const [erreur, setErreur] = useState('');
+  const charger = useCallback(() => {
+    api(`/sites/${site}/conversations/${convo.conversation_id}`).then(setDetail).catch(e => setErreur(e.detail || 'Conversation indisponible'));
+  }, [site, convo]);
+  useEffect(() => { charger(); suivi('screen_view', { ecran: 'conversation' }); }, [charger]);
+  async function envoyer() {
+    if (!texte.trim()) return; setCharge(true); setErreur('');
+    try { await api(`/sites/${site}/conversations/${convo.conversation_id}/reply`, { corps: { content: texte } });
+      setTexte(''); charger(); suivi('feature_use', { fonctionnalite: 'prise_en_main' }); }
+    catch (e) { setErreur(e.detail || 'Envoi impossible'); }
+    setCharge(false);
+  }
+  async function basculer(action) {
+    setCharge(true); setErreur('');
+    try { await api(`/sites/${site}/conversations/${convo.conversation_id}/${action}`, { corps: {} }); charger(); }
+    catch (e) { setErreur(e.detail || 'Action impossible'); }
+    setCharge(false);
+  }
+  const humain = detail?.conversation?.human_active;
+  return html`
+    <button class="retour" onClick=${revenir}><${Icone.retour} /> Conversations</button>
+    <h1 class="titre-section" style="font-size:22px">${convo.visitor_name || 'Visiteur'}</h1>
+    <p class="sous-titre">${humain ? 'Vous avez la main — Mia est en pause.' : 'Mia répond. Vous pouvez prendre la main à tout moment.'}</p>
+    ${erreur && html`<div class="erreur">${erreur}</div>`}
+    <div class="bandeau-main">
+      ${humain
+        ? html`<button class="bouton" style="background:var(--surface);color:var(--accent);border:1px solid var(--accent-filet)" onClick=${() => basculer('release')} disabled=${charge}>Rendre la main à Mia</button>`
+        : html`<button class="bouton" style="background:var(--info)" onClick=${() => basculer('takeover')} disabled=${charge}>Prendre la main</button>`}
+    </div>
+    <div class="fil">
+      ${detail === null && html`<div class="squelette" style="height:44px"/><div class="squelette" style="height:44px;margin-top:9px"/>`}
+      ${detail?.messages?.map(m => html`
+        <div key=${m.id} class="bulle ${m.role === 'user' ? 'visiteur' : 'mia'}">
+          ${m.content}
+          <span class="qui">${m.role === 'user' ? (detail.visitor?.name || 'Visiteur') : (m.human ? 'Vous (conseiller)' : 'Mia')} · ${heureCourte(m.created_at)}</span>
+        </div>`)}
+    </div>
+    <div class="composeur">
+      <input placeholder="Votre réponse…" value=${texte} onInput=${e => setTexte(e.target.value)} onKeyDown=${e => e.key === 'Enter' && envoyer()} maxlength="4000" aria-label="Votre réponse" />
+      <button class="envoyer" onClick=${envoyer} disabled=${charge} aria-label="Envoyer"><${Icone.envoyer} /></button>
+    </div>`;
+}
+
+/* ================= écran Notifications ================= */
+function Notifications({ moi }) {
+  const site = moi.sites[0]?.site_id;
+  const [liste, setListe] = useState(null);
+  useEffect(() => { if (!site) return;
+    api(`/sites/${site}/notifications?page_size=30`).then(n => setListe(n.notifications)).catch(() => setListe([]));
+    suivi('screen_view', { ecran: 'notifications' });
+  }, [site]);
+  async function toutLire() {
+    await api(`/sites/${site}/notifications/read`, { corps: { toutes: true } });
+    setListe(l => l.map(n => ({ ...n, lu: true })));
+  }
+  return html`
+    <h1 class="titre-section">Notifications</h1>
+    <p class="sous-titre">Leads, escalades, visiteurs.</p>
+    ${liste && liste.some(n => !n.lu) && html`<button class="bouton" style="width:auto;margin-bottom:12px" onClick=${toutLire}>Tout marquer comme lu</button>`}
+    ${liste === null && html`<div class="squelette" style="height:56px;margin-bottom:9px"/><div class="squelette" style="height:56px;margin-bottom:9px"/>`}
+    ${liste && liste.length === 0 && html`<div class="etat-vide"><h3>Aucune notification</h3><p>Vous serez prévenu ici dès qu'un lead est capturé ou qu'une escalade demande votre attention.</p></div>`}
+    ${liste && liste.map(n => html`
+      <div key=${n.id} class="conv" style=${n.lu ? 'opacity:.6' : ''}>
+        <div class="c">
+          <div class="l1"><b>${n.titre}</b><time>${relatif(n.date_creation)}</time></div>
+          <p class="ap" style="white-space:normal">${n.corps || ''}</p>
+        </div>
+      </div>`)}`;
+}
+
+/* ================= écran Compte ================= */
+function Compte({ moi, deconnexion }) {
+  const [consent, setConsent] = useState(localStorage.getItem('mia-consent') !== '0');
+  const [plans, setPlans] = useState(null);
+  useEffect(() => { api('/plans').then(setPlans).catch(() => {}); suivi('screen_view', { ecran: 'compte' }); }, []);
+  const basculerConsent = () => {
+    const v = !consent; setConsent(v); localStorage.setItem('mia-consent', v ? '1' : '0');
+    suivi('consent', { etat: v ? 'accorde' : 'refuse' });
+  };
+  return html`
+    <h1 class="titre-section">Compte</h1>
+    <p class="sous-titre">${moi.email} · ${moi.role_client || 'client'}</p>
+    <div class="carte-connexion" style="margin:0 auto 14px;max-width:none">
+      <div class="champ" style="display:flex;align-items:center;gap:12px;margin-bottom:0">
+        <div style="flex:1"><b style="font-size:14px">Statistiques d'usage</b>
+          <small style="display:block;font-size:12px;color:var(--texte-discret)">Aide à améliorer l'application — jamais le contenu des conversations</small></div>
+        <button class="interrupteur-b" role="switch" aria-checked=${consent} onClick=${basculerConsent} aria-label="Statistiques d'usage"
+          style=${'width:44px;height:26px;border-radius:999px;background:' + (consent ? 'var(--accent)' : 'var(--filet-2,var(--p-sombre-5,var(--p-neutre-4)))') + ';position:relative;flex-shrink:0'}>
+          <span style=${'position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);transition:transform var(--p-duree);transform:translateX(' + (consent ? '18px' : '0') + ')'}></span>
+        </button>
+      </div>
+    </div>
+    ${plans && html`
+      <div class="carte-connexion" style="margin:0 auto 14px;max-width:none">
+        <b style="font-size:14px">Votre plan : ${moi.plan || 'free'}</b>
+        <small style="display:block;font-size:12px;color:var(--texte-discret);margin:6px 0 10px">${plans.note || ''}</small>
+      </div>`}
+    <button class="bouton" style="background:transparent;color:var(--erreur);border:1px solid color-mix(in srgb,var(--erreur) 30%,transparent)" onClick=${deconnexion}>Se déconnecter</button>`;
+}
+
+/* ================= coquille ================= */
+function App() {
+  const [moi, setMoi] = useState(null);
+  const [ecran, setEcran] = useState('accueil');
+  const [convoOuverte, setConvoOuverte] = useState(null);
+  const [nonLues, setNonLues] = useState(0);
+
+  const chargerMoi = useCallback(() => {
+    api('/me').then(m => { setMoi(m); suivi('session_start'); }).catch(e => {
+      if (e.statut === 403 && /provision/i.test(e.detail || '')) { jeton.effacer(); setMoi(null); }
+      else if (e.statut === 401) { jeton.effacer(); setMoi(null); }
+      else setMoi(null);
+    });
+  }, []);
+  useEffect(() => { if (jeton.lire()) chargerMoi(); }, []);
+
+  useEffect(() => { if (moi) {
+    const s = moi.sites[0]?.site_id;
+    if (s) api(`/sites/${s}/notifications?page_size=1`).then(n => setNonLues(n.non_lues || 0)).catch(() => {});
+  } }, [moi, ecran]);
+
+  const deconnexion = () => { suivi('session_end'); jeton.effacer(); setMoi(null); setEcran('accueil'); };
+
+  if (!moi) return html`<${Connexion} apresConnexion=${chargerMoi} />`;
+
+  const sites = moi.sites || [];
+  const ouvrirConversation = c => { setConvoOuverte(c); setEcran('conversation'); };
+
+  return html`
+    <div class="app">
+      <header class="entete">
+        <div class="logo" aria-hidden="true">M</div>
+        <div class="t"><b>${sites[0]?.site_name || 'Mia'}</b><small style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--succes);display:inline-block"></span>Mia en ligne · ${sites[0]?.secteur || ''}</small></div>
+        ${sites.length > 1 && html`<select class="sites" aria-label="Site géré">${sites.map(s => html`<option key=${s.site_id}>${s.site_name}</option>`)}</select>`}
+      </header>
+      <main class="contenu">
+        ${ecran === 'accueil' && html`<${Accueil} moi=${moi} aller=${setEcran} />`}
+        ${ecran === 'conversations' && html`<${Conversations} moi=${moi} ouvrirConversation=${ouvrirConversation} />`}
+        ${ecran === 'conversation' && convoOuverte && html`<${ConversationDetail} moi=${moi} convo=${convoOuverte} revenir=${() => setEcran('conversations')} />`}
+        ${ecran === 'notifications' && html`<${Notifications} moi=${moi} />`}
+        ${ecran === 'compte' && html`<${Compte} moi=${moi} deconnexion=${deconnexion} />`}
+      </main>
+      <nav class="nav-basse" aria-label="Navigation principale">
+        <button class="onglet" aria-current=${ecran === 'accueil' ? 'page' : undefined} onClick=${() => setEcran('accueil')}><${Icone.accueil} /> Accueil</button>
+        <button class="onglet" aria-current=${ecran.startsWith('conversation') ? 'page' : undefined} onClick=${() => setEcran('conversations')}><${Icone.conv} /> Conversations</button>
+        <button class="onglet" aria-current=${ecran === 'notifications' ? 'page' : undefined} onClick=${() => setEcran('notifications')}>
+          <span style="display:flex;align-items:center"><${Icone.cloche} />${nonLues > 0 && html`<span class="pastille">${nonLues}</span>`}</span> Alertes</button>
+        <button class="onglet" aria-current=${ecran === 'compte' ? 'page' : undefined} onClick=${() => setEcran('compte')}><${Icone.compte} /> Compte</button>
+      </nav>
+    </div>`;
+}
+render(html`<${App} />`, document.getElementById('racine'));
+
+/* service worker + installation */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/app/sw.js').catch(() => {});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__installationPossible = e; });
+suivi('app_open');
+</script>
+</body>
+</html>
