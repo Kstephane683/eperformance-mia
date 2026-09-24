@@ -1,23 +1,664 @@
-<!doctype html>
-<html lang="fr" data-theme="light">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mia — l'assistante conversationnelle des sites clients ePerformance</title>
-<meta name="description" content="Mia répond à vos clients 24 h/24 avec les informations de votre site, et vous prévenez dès qu'un prospect a besoin de vous. Page en préparation.">
-<meta name="robots" content="noindex,follow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="var(--fond)">
+<meta name="description" content="Mia répond à vos clients sur votre site, jour et nuit, dans votre métier. Vous recevez les demandes et prenez la main quand vous voulez.">
 <link rel="canonical" href="https://mia.eperformance.pro/">
+<title>Mia — l'assistante qui répond pour votre métier</title>
 <style>
-/* Jetons canoniques — copie de déploiement, source : agent-ia-web/eperf_core (voir assets/css/NOTE) */
+/* ================================================================
+   LP MIA — maquette executable. Jetons du noyau uniquement
+   (mêmes primitives + sémantique que la maquette app validée).
+   Contenu sectoriel : eperformance-mia/contenu-sectoriel.json,
+   généré depuis agent-ia-web/eperf_core/sectors.py — JAMAIS
+   réécrit à la main. Indexable sans JavaScript : le secteur par
+   défaut (restauration) est rendu en balisage ci-dessous.
+   ================================================================ */
+:root {
+  --p-blanc: #ffffff;
+  --p-neutre-0: #fdfcfa; --p-neutre-1: #faf8f4; --p-neutre-2: #f7f5f1;
+  --p-neutre-3: #e5e1d9; --p-neutre-4: #d5cfc3; --p-neutre-5: #b0aaa0;
+  --p-neutre-6: #8f8a7e; --p-neutre-7: #6a676f; --p-neutre-8: #45424b;
+  --p-neutre-9: #16151a;
+  --p-sombre-0: #08080c; --p-sombre-1: #0c0c10; --p-sombre-2: #101014;
+  --p-sombre-3: #14141a; --p-sombre-4: #1c1c22; --p-sombre-5: #282830;
+  --p-sombre-6: #646470; --p-sombre-7: #8b8b96; --p-sombre-8: #b0aaa0;
+  --p-sombre-9: #edeae3;
+  --p-accent-clair: #856b37;      --p-accent-sombre: #c9a96e;
+  --p-accent-appuye-clair: #735d32; --p-accent-appuye-sombre: #e2c07a;
+  --p-rayon-sm: 12px; --p-rayon-md: 20px; --p-rayon-lg: 28px;
+  --p-rayon-pilule: 999px;
+  --p-duree: 300ms; --p-duree-lente: 600ms;
+  --p-courbe: cubic-bezier(0.16, 1, 0.3, 1);
+  --fond: var(--p-neutre-0); --fond-2: var(--p-neutre-2);
+  --surface: var(--p-blanc); --surface-2: var(--p-neutre-1);
+  --texte: var(--p-neutre-9); --texte-doux: var(--p-neutre-8);
+  --texte-discret: var(--p-neutre-7);
+  --accent: var(--p-accent-clair); --accent-appuye: var(--p-accent-appuye-clair);
+  --accent-trace: color-mix(in srgb, var(--p-accent-clair) 7%, transparent);
+  --accent-filet: color-mix(in srgb, var(--p-accent-clair) 22%, transparent);
+  --sur-accent: var(--p-blanc);
+  --filet: var(--p-neutre-3); --filet-controle: var(--p-neutre-6);
+  --succes: var(--p-etat-succes-clair, #12703f);
+  --police-titres: 'Cormorant Garamond', Georgia, serif;
+  --police-corps: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  --fond: var(--p-sombre-0); --fond-2: var(--p-sombre-1);
+  --surface: var(--p-sombre-2); --surface-2: var(--p-sombre-3);
+  --texte: var(--p-sombre-9); --texte-doux: var(--p-sombre-8);
+  --texte-discret: var(--p-sombre-7);
+  --accent: var(--p-accent-sombre); --accent-appuye: var(--p-accent-appuye-sombre);
+  --accent-trace: color-mix(in srgb, var(--p-accent-sombre) 8%, transparent);
+  --accent-filet: color-mix(in srgb, var(--p-accent-sombre) 22%, transparent);
+  --sur-accent: #0a0a0e;
+  --filet: var(--p-sombre-4); --filet-controle: var(--p-sombre-6);
+  --succes: var(--p-etat-succes-sombre, #6fcf8a);
+  color-scheme: dark;
+}
+@font-face { font-family:'DM Sans'; src:url('assets/fonts/dm-sans-400.woff2') format('woff2'); font-weight:400; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('assets/fonts/dm-sans-500.woff2') format('woff2'); font-weight:500; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('assets/fonts/dm-sans-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
+@font-face { font-family:'Cormorant Garamond'; src:url('assets/fonts/cormorant-garamond-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--police-corps); background:var(--fond); color:var(--texte); line-height:1.6;
+       transition:background-color var(--p-duree) var(--p-courbe), color var(--p-duree) var(--p-courbe); }
+button { font-family:inherit; cursor:pointer; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+img, svg { display:block; }
+main { max-width:1080px; margin:0 auto; padding:0 28px; }
+
+/* bandeau haut */
+.barre { max-width:1080px; margin:0 auto; padding:22px 28px; display:flex; align-items:center; gap:14px; }
+.marque { display:flex; align-items:center; gap:10px; font-family:var(--police-titres); font-size:24px; font-weight:600; flex:1; }
+.logo { width:40px; height:40px; border-radius:12px; background:var(--accent); color:var(--sur-accent); display:grid; place-items:center; font-size:24px; }
+.barre .deja { font-size:14px; color:var(--texte-discret); text-decoration:none; border-bottom:1px solid var(--accent-filet); padding-bottom:2px; }
+.barre .deja b { color:var(--accent); font-weight:600; }
+
+/* S1 hero */
+.hero { max-width:1080px; margin:0 auto; padding:64px 28px 56px; text-align:center; }
+.selecteur { display:inline-flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:34px; }
+.selecteur button {
+  padding:9px 18px; border-radius:var(--p-rayon-pilule); border:1px solid var(--filet-controle);
+  background:var(--surface); color:var(--texte-doux); font-size:13.5px; font-weight:500;
+  transition:all var(--p-duree) var(--p-courbe);
+}
+.selecteur button[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--sur-accent); font-weight:600; }
+.hero h1 { font-family:var(--police-titres); font-size:64px; line-height:1.04; font-weight:600; letter-spacing:-0.5px; max-width:900px; margin:0 auto 20px; }
+.hero h1 em { font-style:normal; color:var(--accent); }
+.hero .promesse { font-size:19px; color:var(--texte-doux); max-width:640px; margin:0 auto 34px; }
+.cta-rangee { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+.bouton { display:inline-flex; align-items:center; gap:10px; padding:16px 30px; border-radius:var(--p-rayon-pilule);
+          background:var(--accent); color:var(--sur-accent); font-size:16px; font-weight:600; text-decoration:none;
+          transition:background-color var(--p-duree) var(--p-courbe), transform var(--p-duree) var(--p-courbe); border:none; }
+.bouton:hover { background:var(--accent-appuye); transform:translateY(-2px); }
+.bouton.secondaire { background:transparent; color:var(--accent); border:1px solid var(--accent-filet); }
+.bouton.secondaire:hover { background:var(--accent-trace); }
+.hero .note { margin-top:22px; font-size:13px; color:var(--texte-discret); }
+
+/* sections communes */
+section { padding:72px 0; }
+section + section { border-top:1px solid var(--filet); }
+.sur-titre { font-size:12px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+h2 { font-family:var(--police-titres); font-size:44px; line-height:1.1; font-weight:600; margin-bottom:14px; max-width:760px; }
+.intro { font-size:17px; color:var(--texte-doux); max-width:620px; margin-bottom:40px; }
+
+/* S2 capacites */
+.capacites { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.capacite { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); padding:20px; }
+.capacite-icone { width:38px; height:38px; border-radius:50%; background:var(--accent-trace); border:1px solid var(--accent-filet);
+                   color:var(--accent); display:grid; place-items:center; margin-bottom:12px; }
+.capacite h4 { font-size:15.5px; font-weight:600; margin-bottom:4px; }
+.capacite-etat { font-size:12.5px; font-weight:600; color:var(--succes); }
+.capacite-etat.bientot { color:var(--texte-discret); }
+
+/* S3 etapes */
+.etapes { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; counter-reset:etape; }
+.etape { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); padding:24px; position:relative; }
+.etape::before { counter-increment:etape; content:counter(etape); font-family:var(--police-titres); font-size:40px; font-weight:600;
+                  color:var(--accent); display:block; margin-bottom:10px; line-height:1; }
+.etape h3 { font-size:16.5px; font-weight:600; margin-bottom:6px; }
+.etape p { font-size:14px; color:var(--texte-doux); }
+
+/* S4 demo */
+.demo { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-lg); padding:34px;
+         display:grid; grid-template-columns:1fr 340px; gap:36px; align-items:center; }
+.demo .fil { display:flex; flex-direction:column; gap:10px; }
+.bulle { max-width:82%; padding:12px 16px; border-radius:18px; font-size:14.5px; line-height:1.5; }
+.bulle.visiteur { align-self:flex-end; background:var(--accent); color:var(--sur-accent); border-bottom-right-radius:6px; }
+.bulle.mia { align-self:flex-start; background:var(--surface-2); border:1px solid var(--filet); border-bottom-left-radius:6px; }
+.bulle.mia b { color:var(--accent); }
+.demo .encart { font-size:14px; color:var(--texte-doux); }
+.demo .encart b { display:block; font-size:16px; color:var(--texte); margin-bottom:8px; }
+.demo .encart .bouton { margin-top:16px; display:flex; }
+
+/* S5 app */
+.app-rangee { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:34px; }
+.apercu { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); padding:18px; }
+.apercu .mini { aspect-ratio:9/12.5; border-radius:var(--p-rayon-sm); background:var(--fond-2); border:1px solid var(--filet);
+                 display:flex; flex-direction:column; overflow:hidden; margin-bottom:12px; }
+.apercu .mini .barre-h { padding:8px 10px; font-size:8px; display:flex; gap:5px; align-items:center; border-bottom:1px solid var(--filet); }
+.apercu .mini .barre-h .point { width:5px; height:5px; border-radius:50%; background:var(--succes); }
+.apercu .mini .corps { flex:1; padding:8px; display:flex; flex-direction:column; gap:6px; }
+.apercu .mini .k { background:var(--surface); border:1px solid var(--filet); border-radius:8px; padding:7px 8px; }
+.apercu .mini .k b { display:block; font-size:11px; font-family:var(--police-corps); }
+.apercu .mini .k small { font-size:7.5px; color:var(--texte-discret); }
+.apercu .mini .or { background:var(--accent); border-color:var(--accent); }
+.apercu .mini .or b { color:var(--sur-accent); }
+.apercu .mini .or small { color:var(--sur-accent); opacity:.8; }
+.apercu .mini .vague { height:22px; background:var(--accent-trace); border-top:1px solid var(--accent-filet); display:grid; place-items:center; }
+.apercu .mini .vague span { width:22px; height:22px; margin-top:-14px; border-radius:50%; background:var(--accent); border:3px solid var(--surface); }
+.apercu h3 { font-size:14.5px; font-weight:600; }
+.apercu p { font-size:12.5px; color:var(--texte-discret); }
+.fonctionnalites-app { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; margin-bottom:34px; }
+.fonctionnalites-app li { display:flex; gap:10px; font-size:14.5px; color:var(--texte-doux); align-items:flex-start; }
+.fonctionnalites-app svg { flex-shrink:0; margin-top:3px; color:var(--accent); }
+
+/* S6 preuves */
+.preuves { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.preuve { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); padding:24px; }
+.preuve .chiffre { font-size:38px; font-weight:700; color:var(--accent); line-height:1; font-variant-numeric:tabular-nums; }
+.preuve .libelle { font-size:13.5px; color:var(--texte-doux); margin-top:8px; }
+.preuve .source { font-size:11px; color:var(--texte-discret); margin-top:10px; }
+
+/* S7 FAQ */
+.faq { max-width:760px; }
+.faq details { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); padding:18px 22px; margin-bottom:10px; }
+.faq summary { font-size:15.5px; font-weight:600; cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+.faq summary::after { content:'+'; font-size:22px; color:var(--accent); font-weight:400; transition:transform var(--p-duree) var(--p-courbe); }
+.faq details[open] summary::after { transform:rotate(45deg); }
+.faq details p { margin-top:12px; font-size:14.5px; color:var(--texte-doux); }
+
+/* S8 cta final */
+.final { text-align:center; padding:88px 0; }
+.final h2 { margin:0 auto 14px; }
+.final .intro { margin:0 auto 34px; }
+.final .selecteur { margin-bottom:30px; }
+footer { border-top:1px solid var(--filet); padding:30px 0 44px; font-size:13px; color:var(--texte-discret); }
+footer .ligne { max-width:1080px; margin:0 auto; padding:0 28px; display:flex; gap:22px; flex-wrap:wrap; }
+footer a { color:var(--texte-discret); }
+
+/* commande maquette */
+.commande { position:fixed; top:12px; right:12px; z-index:50; display:flex; gap:8px; }
+.commande button { padding:9px 14px; border-radius:var(--p-rayon-pilule); font-size:12px; font-weight:600;
+  background:var(--surface); border:1px solid var(--filet-controle); color:var(--texte-doux); }
+
+@media (max-width:900px) {
+  .hero h1 { font-size:42px; }
+  .capacites, .etapes, .preuves, .app-rangee { grid-template-columns:1fr 1fr; }
+  .demo { grid-template-columns:1fr; }
+  .fonctionnalites-app { grid-template-columns:1fr; }
+}
+@media (max-width:600px) {
+  .capacites, .etapes, .preuves, .app-rangee { grid-template-columns:1fr; }
+  .hero h1 { font-size:34px; }
+  h2 { font-size:32px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition-duration:0.01ms !important } }
 </style>
-<link rel="stylesheet" href="assets/css/eperf.css">
 </head>
 <body>
-<main style="max-width:640px;margin:12vh auto;padding:0 24px;text-align:center">
-  <p style="font-family:var(--police-titres);font-size:clamp(2rem,6vw,3rem);color:var(--gold);margin:0 0 8px">Mia</p>
-  <h1 style="font-family:var(--police-titres);font-size:clamp(1.3rem,4vw,1.8rem);color:var(--texte);margin:0 0 16px">L'assistante conversationnelle de votre site, en préparation.</h1>
-  <p style="color:var(--texte2);line-height:1.7">Cette page présente bientôt Mia par secteur d'activité — ce qu'elle répond à vos clients, comment vous la gérez, et comment l'installer.</p>
-  <p style="color:var(--texte2);line-height:1.7">En attendant, découvrez le chatbot en action sur <a href="https://eperformance.pro" style="color:var(--gold)">eperformance.pro</a>.</p>
+
+<div class="commande">
+  <button id="bascule-theme">Thème sombre</button>
+</div>
+
+<header class="barre">
+  <div class="marque"><span class="logo" aria-hidden="true">M</span> Mia</div>
+  <a class="deja" href="#app">Vous avez déjà Mia ? <b>Gérez-la</b></a>
+</header>
+
+<main>
+
+  <!-- S1 HERO — le selecteur de secteur structure toute la page -->
+  <section class="hero" aria-labelledby="hero-titre">
+    <div class="selecteur" role="group" aria-label="Votre secteur d'activité" id="selecteur"><!-- genere depuis les 12 secteurs --></div>
+    <h1 id="hero-titre">L'assistante qui répond <em>pour votre <span id="secteur-hero">restaurant</span></em>, jour et nuit.</h1>
+    <p class="promesse" id="hero-accroche">Un client affamé veut une réponse immédiate : la carte, les horaires, une table. Mia tient ce rôle jour et nuit — elle répond, et vous transmet la demande de réservation.</p>
+    <div class="cta-rangee">
+      <a class="bouton" href="#app">Installer Mia
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg></a>
+      <a class="bouton secondaire" href="#demo">Voir Mia en action</a>
+    </div>
+    <p class="note">Installation en quelques minutes sur votre site existant — sans refonte.</p>
+  </section>
+
+  <!-- S2 CE QUE MIA SAIT FAIRE — genere depuis le contenu sectoriel du noyau -->
+  <section id="capacites" aria-labelledby="capacites-titre">
+    <p class="sur-titre">Votre métier</p>
+    <h2 id="capacites-titre">Ce que Mia sait faire <span id="secteur-capacites">dans la restauration</span></h2>
+    <p class="intro">Ce que Mia répond dès aujourd'hui à vos visiteurs. Rien de plus n'est promis : quand une capacité arrivera, elle apparaîtra ici comme « bientôt » — jamais avant d'être réelle.</p>
+    <div class="capacites" id="liste-capacites">
+          <article class="capacite">
+            <div class="capacite-icone" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <h4>réservation</h4>
+            <p class="capacite-etat">Mia répond</p>
+          </article>
+          <article class="capacite">
+            <div class="capacite-icone" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <h4>allergies et régimes</h4>
+            <p class="capacite-etat">Mia répond</p>
+          </article>
+          <article class="capacite">
+            <div class="capacite-icone" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <h4>horaires</h4>
+            <p class="capacite-etat">Mia répond</p>
+          </article>
+          <article class="capacite">
+            <div class="capacite-icone" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <h4>groupes et événements privés</h4>
+            <p class="capacite-etat">Mia répond</p>
+          </article>
+    </div>
+  </section>
+
+  <!-- S3 COMMENT CA MARCHE -->
+  <section aria-labelledby="comment-titre">
+    <p class="sur-titre">Comment ça marche</p>
+    <h2 id="comment-titre">Trois étapes, aucune technique de votre côté</h2>
+    <div class="etapes">
+      <article class="etape"><h3>Le visiteur pose sa question</h3><p>Sur votre site, à l'heure où il le souhaite — y compris quand vous êtes en cuisine, en rendez-vous ou simplement le soir.</p></article>
+      <article class="etape"><h3>Mia répond avec vos informations</h3><p>Carte, horaires, tarifs, délais : elle répond avec ce qui est vrai sur votre site, et le demande quand il lui manque quelque chose.</p></article>
+      <article class="etape"><h3>Vous recevez et prenez la main</h3><p>Une demande de réservation, un contact, une question sensible : vous êtes prévenu, et vous reprenez la conversation quand vous le décidez.</p></article>
+    </div>
+  </section>
+
+  <!-- S4 DEMONSTRATION -->
+  <section id="demo" aria-labelledby="demo-titre">
+    <p class="sur-titre">Démonstration</p>
+    <h2 id="demo-titre">Voyez Mia répondre, maintenant</h2>
+    <p class="intro">Un échange dans le secteur choisi ci-dessus, construit sur ses thèmes réels. La démonstration interactive — où vous posez vos propres questions — arrive avec l'ouverture du domaine de démonstration.</p>
+    <div class="demo">
+      <div class="fil" aria-label="Exemple de conversation" id="fil-demo">
+        <div class="bulle visiteur">Bonjour, avez-vous une table pour 6 ce samedi soir ?</div>
+        <div class="bulle mia"><b>Mia</b> — Bonsoir ! Oui, nous accueillons les groupes. Je note pour la réservation : 6 personnes, samedi soir. Vous souhaitez être contacté pour confirmer ?</div>
+        <div class="bulle visiteur">Oui, 20h — et vous avez des options sans gluten ?</div>
+        <div class="bulle mia"><b>Mia</b> — Nos plats sont indiqués allergènes et régimes. C'est transmis : table de 6, samedi 20h — l'équipe vous rappelle pour confirmer.</div>
+      </div>
+      <div class="encart">
+        <b>Cet échange illustre ce que Mia répond.</b>
+        Les thèmes de réponse viennent du contenu réel du secteur — la même Mia répondra sur votre site avec vos informations. La démonstration interactive, où vous posez vos questions, arrive avec le domaine de démonstration.
+        <a class="bouton" href="#app">Installer Mia</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- S5 L'APPLICATION -->
+  <section id="app" aria-labelledby="app-titre">
+    <p class="sur-titre">L'application</p>
+    <h2 id="app-titre">Gérez Mia depuis votre téléphone</h2>
+    <p class="intro">Mia travaille sur votre site ; l'application vous donne le contrôle : ce qu'elle dit, quand elle le dit, et quand vous reprenez la main.</p>
+    <div class="app-rangee">
+      <div class="apercu">
+        <div class="mini" role="img" aria-label="Écran d'accueil de l'application Mia">
+          <div class="barre-h"><span class="point"></span> Mia en ligne</div>
+          <div class="corps">
+            <div class="k or"><b>2</b><small>leads à traiter</small></div>
+            <div class="k"><b>14</b><small>conversations ce jour</small></div>
+            <div class="k"><b>96 %</b><small>réponses de Mia</small></div>
+          </div>
+          <div class="vague"><span></span></div>
+        </div>
+        <h3>Accueil — l'état vivant</h3>
+        <p>Ce qui compte ce jour : leads, non lus, escalades.</p>
+      </div>
+      <div class="apercu">
+        <div class="mini" role="img" aria-label="Écran des conversations">
+          <div class="barre-h"><span class="point"></span> Conversations</div>
+          <div class="corps">
+            <div class="k"><b>Koffi</b><small>« Vous livrez ce soir ? »</small></div>
+            <div class="k"><b>Awa</b><small>« Le yassa est-il épicé ? »</small></div>
+            <div class="k"><b>Moussa</b><small>« Merci, tout était parfait »</small></div>
+          </div>
+          <div class="vague"><span></span></div>
+        </div>
+        <h3>Conversations — la boîte unifiée</h3>
+        <p>Filtres, recherche, prise en main en un geste.</p>
+      </div>
+      <div class="apercu">
+        <div class="mini" role="img" aria-label="Écran des compétences">
+          <div class="barre-h"><span class="point"></span> Compétences</div>
+          <div class="corps">
+            <div class="k"><b>Carte et plats</b><small>activée</small></div>
+            <div class="k"><b>Horaires</b><small>activée</small></div>
+            <div class="k"><b>Liste d'attente</b><small>bientôt</small></div>
+          </div>
+          <div class="vague"><span></span></div>
+        </div>
+        <h3>Compétences — votre métier</h3>
+        <p>Activez ce que Mia sait faire, thème par thème.</p>
+      </div>
+    </div>
+    <ul class="fonctionnalites-app">
+      <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Notifications pour chaque lead et chaque escalade</li>
+      <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Prise en main : vous répondez à la place de Mia, et rendez la main</li>
+      <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Compétences activables dans votre métier, thème par thème</li>
+      <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Horaires, fermetures et vacances — la donnée que Mia utilise</li>
+      <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Testez Mia en direct, sans enregistrer la conversation</li>
+      <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Données de vos visiteurs : export et suppression, dans l'application</li>
+    </ul>
+    <a class="bouton" href="#final">Installer l'application</a>
+  </section>
+
+  <!-- S6 PREUVES — aucune invention : que des mesures reelles -->
+  <section aria-labelledby="preuves-titre">
+    <p class="sur-titre">Preuves</p>
+    <h2 id="preuves-titre">Vérifié de bout en bout</h2>
+    <div class="preuves">
+      <div class="preuve"><div class="chiffre">12</div><div class="libelle">métiers clients couverts par le même moteur, contenus réels vérifiés</div><div class="source">banc sectoriel, 11 contrôles automatiques par secteur</div></div>
+      <div class="preuve"><div class="chiffre">359</div><div class="libelle">tests automatisés sur le backend — isolation, sécurité, notifications</div><div class="source">suite pytest du backend, septembre 2026</div></div>
+      <div class="preuve"><div class="chiffre">11</div><div class="libelle">contrôles automatiques sur chaque métier — contenus vérifiés avant d'être promis</div><div class="source">banc sectoriel automatique du produit</div></div>
+    </div>
+  </section>
+
+  <!-- S7 FAQ -->
+  <section aria-labelledby="faq-titre">
+    <p class="sur-titre">Questions fréquentes</p>
+    <h2 id="faq-titre">Les questions qu'on nous pose</h2>
+    <div class="faq">
+      <details>
+        <summary>Combien ça coûte ?</summary>
+        <p>La tarification n'est pas encore arrêtée — le catalogue de plans est en démonstration et le mentionne clairement. L'installation et l'essai ne dépendent pas de cette décision : vous pouvez tester Mia sur votre site dès maintenant.</p>
+      </details>
+      <details>
+        <summary>Qui voit les conversations de mes visiteurs ?</summary>
+        <p>Vous, et uniquement vous. Votre compte est lié à votre site seul : les données d'un autre site sont inaccessibles, techniquement — la demande renvoie une absence, pas un refus. Vous pouvez exporter ou supprimer la conversation d'un visiteur depuis l'application, à sa demande ou à la vôtre, et la durée de conservation est affichée dans l'app.</p>
+      </details>
+      <details>
+        <summary>Mia prend-elle les réservations et les commandes ?</summary>
+        <p>Mia répond et transmet : une demande de réservation, un contact, une question complexe vous arrivent et vous décidez. La prise de commande automatisée et l'agenda réel sont annoncés « bientôt » et ne le seront que lorsqu'ils seront réellement branchés — jamais avant.</p>
+      </details>
+      <details>
+        <summary>Comment se fait l'installation ?</summary>
+        <p>Quelques minutes sur votre site existant : un script à ajouter, sans refonte. Mia lit les informations déjà publiées sur vos pages et vous demande ce qui lui manque.</p>
+      </details>
+      <details>
+        <summary>Mia parle-t-elle plusieurs langues ?</summary>
+        <p>L'interface de l'application est en français. Les langues de réponse aux visiteurs s'étendent selon vos besoins — dites-nous ce que vos clients parlent.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- S8 CTA FINAL -->
+  <section id="final" class="final" aria-labelledby="final-titre">
+    <h2 id="final-titre">Votre site mérite de répondre quand vous ne pouvez pas.</h2>
+    <p class="intro">Installez Mia, regardez-la répondre avec vos informations, reprenez la main quand vous le voulez.</p>
+    <div class="selecteur" role="group" aria-label="Votre secteur (rappel)" id="selecteur-final"><!-- miroir du selecteur --></div>
+    <div class="cta-rangee">
+      <a class="bouton" href="#app">Installer Mia</a>
+      <a class="bouton secondaire" href="#demo">Revoir Mia en action</a>
+    </div>
+  </section>
 </main>
+
+<footer>
+  <div class="ligne">
+    <span>Mia</span>
+    <a href="#capacites">Ce que Mia sait faire</a>
+    <a href="#app">L'application</a>
+    <span>Données personnelles : export et suppression par conversation, rétention affichée dans l'app</span>
+  </div>
+</footer>
+
+<script>
+/* Donnees sectorielles — GENEREES depuis eperformance-mia/contenu-sectoriel.json
+   (source : agent-ia-web/eperf_core/sectors.py). Ne jamais reecrire a la main. */
+const SECTEURS = {
+  "restauration": {
+    "nom": "Restauration",
+    "accroche": "Un client affamé veut une réponse immédiate : la carte, les horaires, une table. Mia tient ce rôle jour et nuit — elle répond, et vous transmet la demande de réservation.",
+    "themes": [
+      "réservation",
+      "allergies et régimes",
+      "horaires",
+      "groupes et événements privés"
+    ]
+  },
+  "hotellerie": {
+    "nom": "Hôtellerie",
+    "accroche": "Un voyageur réserve quand son doute est levé : la chambre, le tarif, l'arrivée, l'annulation. Mia répond à chacune de ces questions avec les informations de votre établissement.",
+    "themes": [
+      "arrivée et départ",
+      "réservation et annulation",
+      "équipements",
+      "accès et stationnement"
+    ]
+  },
+  "ecommerce": {
+    "nom": "Boutique en ligne",
+    "accroche": "Un client qui hésite sur la livraison, la taille ou le retour repart sans acheter. Mia répond au moment précis de l'hésitation — et capture le contact d'un panier abandonné.",
+    "themes": [
+      "livraison",
+      "retours et remboursements",
+      "paiement",
+      "compte client"
+    ]
+  },
+  "immobilier": {
+    "nom": "Immobilier",
+    "accroche": "Un prospect veut voir avant de visiter : le bien, le prix, le financement. Mia présente vos biens et qualifie le prospect pendant que vos agents travaillent.",
+    "themes": [
+      "visite",
+      "financement",
+      "frais et notaire",
+      "estimation"
+    ]
+  },
+  "mlm": {
+    "nom": "Marketing de réseau",
+    "accroche": "Un candidat se décide quand le démarrage, l'investissement et la rémunération sont clairs. Mia explique les trois en langage simple, 24 h sur 24.",
+    "themes": [
+      "démarrage et investissement",
+      "plan de rémunération",
+      "produits",
+      "parrainage et parrain"
+    ]
+  },
+  "beaute": {
+    "nom": "Beauté et soins",
+    "accroche": "Une cliente choisit un geste et une praticienne : quels soins, quels produits, quel délai pour un rendez-vous. Mia répond à tout cela depuis votre site — et laisse le rendez-vous à prendre avec vous.",
+    "themes": [
+      "soins",
+      "prise de rendez-vous",
+      "produits utilisés",
+      "annulation et report"
+    ]
+  },
+  "sante": {
+    "nom": "Santé",
+    "accroche": "Une inquiétude doit se transformer en rendez-vous, pas rester sans réponse. Mia répond aux questions pratiques et vous transmet chaque demande de rendez-vous.",
+    "themes": [
+      "prise de rendez-vous",
+      "remboursement et mutuelle",
+      "assurance",
+      "urgences"
+    ]
+  },
+  "education": {
+    "nom": "Éducation et formation",
+    "accroche": "Un futur étudiant compare des programmes avant de candidater. Mia présente les vôtres — niveau, durée, frais — et vous transmet chaque dossier.",
+    "themes": [
+      "inscription et dossier",
+      "frais de scolarité",
+      "diplômes et accréditations",
+      "calendrier et rythme"
+    ]
+  },
+  "evenementiel": {
+    "nom": "Événementiel",
+    "accroche": "Un visiteur décide vite : le programme, la billetterie, l'accès. Mia répond en continu et vous transmet chaque demande de devis.",
+    "themes": [
+      "billetterie et places",
+      "devis",
+      "lieu et accès",
+      "prestataires et traiteurs"
+    ]
+  },
+  "tourisme": {
+    "nom": "Tourisme et voyages",
+    "accroche": "Un voyageur part quand les formalités et le devis sont clairs. Mia présente vos séjours et vous transmet chaque demande de réservation.",
+    "themes": [
+      "devis et réservation",
+      "formalités et visa",
+      "annulation",
+      "taille des groupes"
+    ]
+  },
+  "artisan": {
+    "nom": "Artisanat et bâtiment",
+    "accroche": "Un client compare des devis pendant que vous êtes sur le chantier. Mia répond sur vos prestations, vos matériaux et vos délais — et vous transmet la demande.",
+    "themes": [
+      "devis",
+      "délais et planning",
+      "matériaux et finitions",
+      "zone d'intervention"
+    ]
+  },
+  "vitrine": {
+    "nom": "Site vitrine",
+    "accroche": "Sur un site de services, le visiteur veut une preuve avant un contact : le travail est-il réel, sous quels délais, dans quelle zone. Mia tient ce rôle — elle répond avec les informations de votre site, à toute heure, et amène chaque visiteur au contact.",
+    "themes": [
+      "déroulement d'une prestation",
+      "devis",
+      "délais",
+      "zone d'intervention"
+    ]
+  }
+};
+/* Demonstrations par secteur — chaque echange illustre les themes REELS du noyau */
+const DEMOS = {
+  "restauration": [
+    "Bonjour, avez-vous une table pour 6 ce samedi soir ?",
+    "Bonsoir ! Oui, nous accueillons les groupes. Je note pour la réservation : 6 personnes, samedi soir. Vous souhaitez être contacté pour confirmer ?",
+    "Oui, 20h — et vous avez des options sans gluten ?",
+    "Nos plats sont indiqués allergènes et régimes. C'est transmis : table de 6, samedi 20h — l'équipe vous rappelle pour confirmer."
+  ],
+  "hotellerie": [
+    "Une chambre double est-elle libre du 24 au 26 ?",
+    "Oui, la chambre double est disponible. Arrivée dès 13h, départ avant 12h — réservation avec annulation jusqu'à 48h avant. Je transmets votre demande ?",
+    "D'accord, et la chambre a la climatisation ?",
+    "Oui, climatisation et wifi inclus. C'est transmis : double du 24 au 26 — l'hôtel vous confirme."
+  ],
+  "ecommerce": [
+    "Vous livrez à Bouaké, et sous combien de temps ?",
+    "Oui, livraison sous 48 à 72h — le délai exact s'affiche au paiement. Vous regardiez un produit en particulier ?",
+    "Et si la taille ne va pas ?",
+    "Retours et remboursements sont prévus : 14 jours pour renvoyer l'article. Je vous envoie le lien pour commander."
+  ],
+  "immobilier": [
+    "Vous avez des 3 pièces disponibles à Cocody ?",
+    "Oui, plusieurs 3 pièces sont disponibles. Souhaitez-vous programmer une visite ? Je peux aussi vous orienter sur le financement.",
+    "Oui, samedi si possible — et l'achat passe par quel montage ?",
+    "Visite notée pour samedi : l'agent vous confirme l'heure et vous explique le financement, frais et notaire compris."
+  ],
+  "mlm": [
+    "Comment on démarre dans le réseau, et ça demande quel investissement ?",
+    "Le démarrage se fait avec un kit de départ — l'investissement exact vous est présenté avec les produits. Voulez-vous qu'un distributeur vous contacte ?",
+    "Et le plan de rémunération, il marche comment ?",
+    "Je vous l'explique en langage simple, étape par étape. Votre demande est transmise : un distributeur vous rappelle pour tout détailler."
+  ],
+  "beaute": [
+    "Quels soins proposez-vous pour peaux mixtes ?",
+    "Des soins adaptés aux peaux mixtes : nettoyage profond et hydratation. Souhaitez-vous un rendez-vous ?",
+    "Oui, samedi matin si possible.",
+    "C'est noté : samedi matin. Votre demande est transmise, l'institut vous confirme l'heure."
+  ],
+  "sante": [
+    "Puis-je avoir un rendez-vous cette semaine ?",
+    "Oui, des créneaux sont disponibles. Je note votre demande — plutôt le matin ou l'après-midi ?",
+    "Le matin. Vos consultations sont-elles remboursées ?",
+    "Remboursement et mutuelle dépendent de votre couverture : l'équipe vous le confirme au rappel. Votre rendez-vous est transmis."
+  ],
+  "education": [
+    "Les inscriptions sont-elles encore ouvertes ?",
+    "Oui, les inscriptions sont ouvertes. Je peux vous guider sur le dossier à préparer — quel programme vous intéresse ?",
+    "La licence — et les frais de scolarité ?",
+    "Les frais de scolarité vous sont détaillés avec le dossier. Votre demande est transmise : l'école vous rappelle avec le guide d'inscription."
+  ],
+  "evenementiel": [
+    "Reste-t-il des places pour le concert de vendredi ?",
+    "Oui, des places sont encore disponibles pour vendredi. Je peux vous indiquer comment les réserver.",
+    "Et pour un groupe de 10, il y a un tarif ?",
+    "Un devis de groupe est possible. Votre demande est transmise : l'équipe vous rappelle avec les conditions."
+  ],
+  "tourisme": [
+    "Vous avez des séjours au Sénégal en décembre ?",
+    "Oui, des séjours sont proposés en décembre. Souhaitez-vous un devis — et je peux aussi vous informer sur les formalités et le visa ?",
+    "Oui — il faut un passeport ou juste la CNI ?",
+    "Les formalités dépendent de votre nationalité, je vous les détaille. Votre demande de devis est transmise : un conseiller vous rappelle."
+  ],
+  "artisan": [
+    "Vous faites la pose de carrelage, et à quel tarif ?",
+    "Oui, la pose de carrelage fait partie de nos prestations. Le tarif se chiffre sur votre surface — puis-je faire établir un devis ?",
+    "Oui. Et sous quel délai vous pouvez intervenir ?",
+    "Délais et planning sont confirmés au devis. Votre demande est transmise : l'artisan vous rappelle pour prendre les mesures."
+  ],
+  "vitrine": [
+    "Comment se passe une mission avec vous ?",
+    "La prestation se déroule en trois temps : échange, proposition, réalisation. Souhaitez-vous un devis pour votre besoin ?",
+    "Oui, pour un site de présentation.",
+    "Votre demande de devis est transmise : vous êtes rappelé pour cadrer le besoin."
+  ]
+};
+
+/* le selecteur structure TOUTE la page : hero, capacites, miroir final */
+function rendreSelecteur(conteneur, avecDefaut) {
+  Object.entries(SECTEURS).forEach(([cle, s]) => {
+    const b = document.createElement('button');
+    b.textContent = s.nom;
+    b.setAttribute('aria-pressed', String(cle === 'restauration'));
+    b.addEventListener('click', () => choisirSecteur(cle));
+    conteneur.appendChild(b);
+  });
+}
+function choisirSecteur(cle) {
+  const s = SECTEURS[cle];
+  document.querySelectorAll('#selecteur button, #selecteur-final button').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.textContent === s.nom));
+  });
+  document.getElementById('secteur-hero').textContent = s.nom.toLowerCase();
+  document.getElementById('secteur-capacites').textContent = 'dans votre métier : ' + s.nom.toLowerCase();
+  document.getElementById('hero-accroche').textContent = s.accroche;
+  const d = DEMOS[cle];
+  document.getElementById('fil-demo').innerHTML = [
+    `<div class="bulle visiteur">${d[0]}</div>`,
+    `<div class="bulle mia"><b>Mia</b> — ${d[1]}</div>`,
+    `<div class="bulle visiteur">${d[2]}</div>`,
+    `<div class="bulle mia"><b>Mia</b> — ${d[3]}</div>`
+  ].join('');
+  const liste = document.getElementById('liste-capacites');
+  liste.innerHTML = s.themes.map(th => `
+    <article class="capacite">
+      <div class="capacite-icone" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h4>${th}</h4>
+      <p class="capacite-etat">Mia répond</p>
+    </article>`).join('');
+}
+rendreSelecteur(document.getElementById('selecteur'));
+rendreSelecteur(document.getElementById('selecteur-final'));
+
+/* Lien « Gerez-la » — URL_APPLICATION reste null tant que l'app n'est pas deployee.
+   A la livraison (PWA/TWA) : poser l'URL ici (ex. "https://app.mia…"), le lien
+   quitte l'ancre LP et ouvre l'application. Documente dans CONCEPTION-LP.md §8. */
+const URL_APPLICATION = null;
+if (URL_APPLICATION) {
+  const lien = document.querySelector('.barre .deja');
+  lien.setAttribute('href', URL_APPLICATION);
+  lien.setAttribute('target', '_blank');
+  lien.setAttribute('rel', 'noopener');
+}
+
+/* theme clair/sombre */
+document.getElementById('bascule-theme').addEventListener('click', e => {
+  const html = document.documentElement;
+  const sombre = html.getAttribute('data-theme') !== 'dark';
+  html.setAttribute('data-theme', sombre ? 'dark' : 'light');
+  e.target.textContent = sombre ? 'Thème clair' : 'Thème sombre';
+});
+</script>
 </body>
 </html>
