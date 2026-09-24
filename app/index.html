@@ -2,7 +2,7 @@
 <html lang="fr" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="var(--fond)">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- Icône d'accueil iOS : l'iPhone l'exige par <link>, le manifeste ne suffit
@@ -55,19 +55,46 @@
   color-scheme:dark;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--police-corps);background:var(--fond);color:var(--texte);min-height:100vh}
+body{font-family:var(--police-corps);background:var(--fond);color:var(--texte);overscroll-behavior:none;touch-action:manipulation;-webkit-font-smoothing:antialiased}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input{font-family:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.contenu{flex:1;padding:16px 16px 92px}
+.app{max-width:520px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.contenu{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:16px 16px 104px}
 .squelette{border-radius:8px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--filet) 50%,var(--surface-2) 75%);background-size:200% 100%;animation:ondulation 1.2s infinite;height:14px}
 @keyframes ondulation{from{background-position:200% 0}to{background-position:-200% 0}}
-@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}.squelette{animation:none}}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}.squelette{animation:none}}
+.ecran{animation:revelation var(--p-duree,300ms) cubic-bezier(.16,1,.3,1)}
+@keyframes revelation{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.contenu>div{animation:revelation 300ms cubic-bezier(.16,1,.3,1)}
+.bouton:active,.envoyer:active,.onglet:active,.action:active{transform:scale(.96)}
+.bouton,.envoyer,.action,.onglet{transition:transform 150ms cubic-bezier(.16,1,.3,1),background-color 150ms,box-shadow 150ms}
+.action-primaire .pastille-icone,.bouton-central{box-shadow:0 6px 20px var(--accent-halo,rgba(201,169,110,.3))}
+.conv:active{transform:scale(.98)}
+
+/* bandeau hors ligne */
+.bandeau-hors-ligne{display:none;align-items:center;gap:8px;justify-content:center;padding:8px 16px;font-size:12.5px;font-weight:500;background:color-mix(in srgb,var(--erreur) 12%,transparent);color:var(--erreur);border-bottom:1px solid color-mix(in srgb,var(--erreur) 30%,transparent)}
+.hors-ligne .bandeau-hors-ligne{display:flex}
+/* carte d'actions sur elevee (maquette validee) */
+.carte-actions{background:var(--surface);border:1px solid var(--filet-controle);border-radius:var(--p-rayon-md,20px);padding:16px;margin-bottom:14px;box-shadow:0 8px 28px color-mix(in srgb,var(--p-neutre-9) 10%,transparent)}
+.rangee{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.action{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 4px;border-radius:12px}
+.pastille-icone{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--accent-trace);color:var(--accent);border:1px solid var(--accent-filet)}
+.action-primaire .pastille-icone{background:var(--accent);color:var(--sur-accent);border-color:var(--accent)}
+.action span{font-size:12px;font-weight:500}
+/* nav 5 colonnes + bouton central */
+.nav-basse{position:absolute;bottom:0;left:0;right:0;height:86px;background:var(--surface);border-top:1px solid var(--filet);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:6px 8px calc(10px + env(safe-area-inset-bottom))}
+.bouton-central{width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;box-shadow:0 8px 24px var(--accent-halo,rgba(201,169,110,.28)),0 2px 8px color-mix(in srgb,var(--p-neutre-9) 20%,transparent);position:relative;top:-14px}
+.voile{position:absolute;inset:0;background:color-mix(in srgb,var(--p-neutre-9) 45%,transparent);opacity:0;pointer-events:none;transition:opacity var(--p-duree,300ms) cubic-bezier(.16,1,.3,1);z-index:10}
+.ouverte .voile{opacity:1;pointer-events:auto}
+.modale-direct{position:absolute;left:8px;right:8px;bottom:8px;top:56px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-md,20px);transform:translateY(40px);opacity:0;pointer-events:none;transition:transform var(--p-duree,300ms) cubic-bezier(.16,1,.3,1),opacity var(--p-duree,300ms);display:flex;flex-direction:column;overflow:hidden;z-index:11}
+.ouverte .modale-direct{transform:none;opacity:1;pointer-events:auto}
+.fils{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;display:flex;flex-direction:column;gap:9px}
+.carte-qr{display:grid;place-items:center;padding:16px;background:#ffffff;border-radius:12px;margin-bottom:12px}
 
 /* entête */
 .entete{display:flex;align-items:center;gap:10px;padding:16px 16px 12px;border-bottom:1px solid var(--filet)}
-.logo{width:38px;height:38px;border-radius:12px;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;font-family:var(--police-titres);font-size:22px;font-weight:600}
+.logo{width:38px;height:38px;border-radius:12px;object-fit:cover;flex-shrink:0}
 .entete .t{flex:1;min-width:0}
 .entete .t b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .entete .t small{font-size:12px;color:var(--texte-discret)}
@@ -123,7 +150,7 @@ h1.titre{font-family:var(--police-titres);font-size:30px;font-weight:600;margin-
 .bandeau-main .bouton{width:auto;flex:1;padding:10px}
 
 /* nav basse */
-.nav-basse{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;height:78px;background:var(--surface);border-top:1px solid var(--filet);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom));z-index:20}
+.nav-basse{position:absolute;bottom:0;left:0;right:0;height:86px;background:var(--surface);border-top:1px solid var(--filet);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom));z-index:20}
 .onglet{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--texte-discret);font-size:11px;font-weight:500;padding:8px 0}
 .onglet[aria-current=page]{color:var(--accent);font-weight:600}
 .onglet .pastille{min-width:16px;height:16px;border-radius:var(--p-rayon-pilule);background:var(--accent-appuye);color:var(--sur-accent);font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;margin-left:4px}
@@ -135,6 +162,7 @@ h1.titre{font-family:var(--police-titres);font-size:30px;font-weight:600;margin-
 </head>
 <body>
 <div id="racine"></div>
+<script src="vendor/qrcode.min.js"></script>
 <script type="importmap">
 { "imports": { "preact": "./vendor/preact.module.js", "preact/hooks": "./vendor/hooks.module.js" } }
 </script>
@@ -559,11 +587,92 @@ function Compte({ moi, deconnexion }) {
 }
 
 /* ================= coquille ================= */
+
+/* ============ Mia en direct (bouton central — le wow moment) ============ */
+function MiaDirect({ moi, fermer }) {
+  const site = moi.sites[0]?.site_id;
+  const [fils, setFils] = useState([{ role: 'mia', texte: 'Bonjour ! Je suis Mia, l\u2019assistante de votre site. Posez-moi une question comme un visiteur le ferait.' }]);
+  const [texte, setTexte] = useState(''); const [charge, setCharge] = useState(false); const [erreur, setErreur] = useState('');
+  async function envoyer() {
+    if (!texte.trim()) return; const m = texte; setTexte(''); setCharge(true); setErreur('');
+    setFils(f => [...f, { role: 'visiteur', texte: m }]);
+    try {
+      const r = await fetch('https://web-production-4ab53.up.railway.app/api/chatbot/message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ site_id: site, message: m, test: true }) });
+      const c = await r.json().catch(() => ({}));
+      const reponse = c.reponse || c.response || c.reply || c.message;
+      setFils(f => [...f, { role: 'mia', texte: reponse || 'Mia n\u2019a pas répondu — réessayez.' }]);
+      suivi('feature_use', { fonctionnalite: 'mia_en_direct' });
+    } catch { setErreur('Test indisponible — vérifiez la connexion.'); }
+    setCharge(false);
+  }
+  return html`
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--filet)">
+      <img class="logo" src="icones/mia-192.png" alt="" aria-hidden="true">
+      <div style="flex:1"><b style="font-size:15px">Mia en direct</b><small style="display:block;font-size:12px;color:var(--succes)">conversation de test — jamais enregistrée</small></div>
+      <button class="icone-bouton" onClick=${fermer} aria-label="Fermer">✕</button>
+    </div>
+    <div class="fils">
+      ${fils.map((f, i) => html`<div key=${i} class="bulle ${f.role === 'visiteur' ? 'visiteur' : 'mia'}">${f.texte}<span class="etq" style="display:block;margin-top:4px;opacity:.7">${f.role === 'visiteur' ? 'vous' : 'Mia · test'}</span></div>`)}
+      ${charge && html`<div class="bulle mia">…</div>`}
+      ${erreur && html`<div class="erreur-bloc">${erreur}</div>`}
+    </div>
+    <div style="display:flex;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--filet)">
+      <input placeholder="Écrivez à Mia…" value=${texte} onInput=${e => setTexte(e.target.value)}
+        onKeyDown=${e => e.key === 'Enter' && envoyer()} aria-label="Message de test"
+        style="flex:1;padding:12px 16px;border-radius:999px;border:1px solid var(--filet-controle);background:var(--surface);color:var(--texte);font-size:15px" />
+      <button class="envoyer" onClick=${envoyer} disabled=${charge} aria-label="Envoyer"
+        style="width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;flex-shrink:0">↑</button>
+    </div>`;
+}
+
+/* ============ Configuration 2FA avec QR (contrat : otpauth_uri, secret affiché UNE fois) ============ */
+function Setup2FA({ apres }) {
+  const [setup, setSetup] = useState(null); const [code, setCode] = useState('');
+  const [erreur, setErreur] = useState(''); const [charge, setCharge] = useState(false);
+  useEffect(() => { api('/2fa/setup', { corps: {} }).then(setSetup).catch(e => setErreur(e.detail || 'Configuration 2FA indisponible')); }, []);
+  useEffect(() => {
+    if (!setup || !window.qrcode) return;
+    const q = window.qrcode(0, 'M'); q.addData(setup.otpauth_uri); q.make();
+    const el = document.getElementById('qr-2fa'); if (!el) return;
+    const m = q.getModuleCount(), taille = 216, cellule = taille / m;
+    el.width = taille; el.height = taille;
+    const ctx = el.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, taille, taille); ctx.fillStyle = '#16151a';
+    for (let l = 0; l < m; l++) for (let c = 0; c < m; c++) if (q.isDark(l, c)) ctx.fillRect(c * cellule, l * cellule, cellule + .5, cellule + .5);
+  }, [setup]);
+  async function activer() {
+    setErreur(''); setCharge(true);
+    try { await api('/2fa/activate', { corps: { code } }); setCharge(false); apres(); }
+    catch (e) { setErreur(e.detail || 'Code invalide'); setCharge(false); }
+  }
+  return html`
+    <div class="contenu" style="padding-top:5vh">
+      <div style="max-width:400px;margin:10vh auto 0;padding:28px 24px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-lg,28px)">
+        <h1 class="titre-section" style="font-size:26px">Sécurisez votre compte</h1>
+        <p class="sous-titre" style="line-height:1.5">La double authentification est requise pour votre rôle. Scannez ce code avec votre application d’authentification (Google Authenticator, Authy…). <b>Ce code ne sera plus affiché.</b></p>
+        ${erreur && html`<div class="erreur-bloc">${erreur}</div>`}
+        ${setup && html`<div class="carte-qr"><canvas id="qr-2fa" width="216" height="216" role="img" aria-label="Code QR de configuration 2FA"></canvas></div>
+          <p style="font-size:11px;color:var(--texte-discret);word-break:break-all;margin-bottom:12px">Clé manuelle : <span style="font-family:monospace">${setup.secret}</span></p>`}
+        ${!setup && html`<div class="squelette" style="height:216px;margin-bottom:12px"/>`}
+        <input inputmode="numeric" maxlength="6" placeholder="Code à 6 chiffres" value=${code} onInput=${e => setCode(e.target.value)}
+          onKeyDown=${e => e.key === 'Enter' && activer()} aria-label="Code de vérification"
+          style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px;margin-bottom:12px;text-align:center;letter-spacing:4px" />
+        <button class="bouton" style="width:100%" onClick=${activer} disabled=${charge}>${charge ? 'Vérification…' : 'Activer la double authentification'}</button>
+      </div>
+    </div>`;
+}
+
 function App() {
   const [moi, setMoi] = useState(null);
   const [ecran, setEcran] = useState('accueil');
   const [convoOuverte, setConvoOuverte] = useState(null);
   const [nonLues, setNonLues] = useState(0);
+  const [direct, setDirect] = useState(false);
+  const [horsLigne, setHorsLigne] = useState(!navigator.onLine);
+  useEffect(() => {
+    const en = () => setHorsLigne(false); const hors = () => setHorsLigne(true);
+    addEventListener('online', en); addEventListener('offline', hors);
+    return () => { removeEventListener('online', en); removeEventListener('offline', hors); };
+  }, []);
 
   const chargerMoi = useCallback(() => {
     api('/me').then(m => { setMoi(m); suivi('session_start'); }).catch(e => {
@@ -582,14 +691,17 @@ function App() {
   const deconnexion = () => { suivi('session_end'); jeton.effacer(); setMoi(null); setEcran('accueil'); };
 
   if (!moi) return html`<${Connexion} apresConnexion=${chargerMoi} />`;
+  const doit2fa = moi.tfa && moi.tfa.requise && !moi.tfa.active;
+  if (doit2fa) return html`<${Setup2FA} apres=${chargerMoi} />`;
 
   const sites = moi.sites || [];
   const ouvrirConversation = c => { setConvoOuverte(c); setEcran('conversation'); };
 
   return html`
-    <div class="app">
+    <div class="app ${horsLigne ? 'hors-ligne' : ''}">
+      <div class="bandeau-hors-ligne" role="status">Hors ligne — conversations consultables, envoi en attente</div>
       <header class="entete">
-        <div class="logo" aria-hidden="true">M</div>
+        <img class="logo" src="icones/mia-192.png" alt="" aria-hidden="true">
         <div class="t"><b>${sites[0]?.site_name || 'Mia'}</b><small style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--succes);display:inline-block"></span>Mia en ligne · ${sites[0]?.secteur || ''}</small></div>
         ${sites.length > 1 && html`<select class="sites" aria-label="Site géré">${sites.map(s => html`<option key=${s.site_id}>${s.site_name}</option>`)}</select>`}
       </header>
@@ -604,10 +716,13 @@ function App() {
       <nav class="nav-basse" aria-label="Navigation principale">
         <button class="onglet" aria-current=${ecran === 'accueil' ? 'page' : undefined} onClick=${() => setEcran('accueil')}><${Icone.accueil} /> Accueil</button>
         <button class="onglet" aria-current=${ecran.startsWith('conversation') ? 'page' : undefined} onClick=${() => setEcran('conversations')}><${Icone.conv} /> Conversations</button>
+        <button class="bouton-central" onClick=${() => setDirect(true)} aria-label="Ouvrir Mia en direct"><${Icone.direct} /></button>
         <button class="onglet" aria-current=${ecran === 'notifications' ? 'page' : undefined} onClick=${() => setEcran('notifications')}>
           <span style="display:flex;align-items:center"><${Icone.cloche} />${nonLues > 0 && html`<span class="pastille">${nonLues}</span>`}</span> Alertes</button>
         <button class="onglet" aria-current=${ecran === 'compte' ? 'page' : undefined} onClick=${() => setEcran('compte')}><${Icone.compte} /> Compte</button>
       </nav>
+      <div class="voile" onClick=${() => setDirect(false)}></div>
+      ${direct && html`<div class="modale-direct" role="dialog" aria-modal="true" aria-label="Test de Mia en direct"><${MiaDirect} moi=${moi} fermer=${() => setDirect(false)} /></div>`}
     </div>`;
 }
 render(html`<${App} />`, document.getElementById('racine'));
