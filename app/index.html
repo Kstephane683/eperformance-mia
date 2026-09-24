@@ -139,7 +139,8 @@ import htm from './vendor/htm.module.js';
 const html = htm.bind(h);
 
 /* ================= API — contrat API-CLIENT-V1, le code fait foi ================= */
-const API = '/api/client/v1';
+const API = 'https://web-production-4ab53.up.railway.app/api/client/v1';
+const AUTH = 'https://web-production-4ab53.up.railway.app/api/auth';
 const jeton = {
   lire: () => localStorage.getItem('mia-jeton'),
   ecrire: (v, jours) => localStorage.setItem('mia-jeton', v),
@@ -200,7 +201,7 @@ function Connexion({ apresConnexion }) {
   async function seConnecter() {
     setErreur(''); setCharge(true);
     try {
-      const r = await fetch('/api/auth/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const r = await fetch(AUTH + '/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password: mdp }) });
       const c = await r.json().catch(() => ({}));
       if (r.status === 401 && c.detail === '2fa_requise') { setErreur(''); setEtape('tfa'); setCharge(false); return; }
@@ -214,7 +215,7 @@ function Connexion({ apresConnexion }) {
   async function verifier2FA() {
     setErreur(''); setCharge(true);
     try {
-      const r = await fetch('/api/auth/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const r = await fetch(AUTH + '/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password: mdp, totp_code: code }) });
       const c = await r.json().catch(() => ({}));
       if (!r.ok) { setErreur(c.detail || 'Code invalide'); setCharge(false); return; }
