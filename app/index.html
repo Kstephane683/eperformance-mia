@@ -1,736 +1,940 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="var(--fond)">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- Icône d'accueil iOS : l'iPhone l'exige par <link>, le manifeste ne suffit
-     pas. Identité ePerformance — logo eP noir + or (posé par CHATBOT le 25/09,
-     ⚠️ geste minimal documenté au journal — le dépôt servi porte le commit). -->
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icones/mia-192.png">
-<title>Mia</title>
+<script>navigator.serviceWorker&&navigator.serviceWorker.register("/app/sw.js").catch(()=>{});window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__install=e;});</script>
+<title>Mia — maquette des écrans clés</title>
 <style>
 /* ================================================================
-   APP MIA v1 — l'application réelle, installable.
-   Stack : Preact 10 + hooks + htm, vendorisés (zéro CDN au runtime).
-   Données : API client v1 en production (contrat API-CLIENT-V1.md,
-   le code fait foi). Jetons : primitives + sémantique du noyau N1.
+   MAQUETTE APP MIA — écrans clés (Accueil, Conversations, Analyses,
+   Réglages, Mia en direct) — clair et sombre.
+
+   Zéro valeur hexadécimale en dur : seules les VARIABLES du noyau
+   (agent-ia-web/eperf_core/assets/css) sont utilisées. Le bloc
+   :root ci-dessous EST la couche primitives + semantic du noyau,
+   recopiée à l'identique pour que le fichier soit autonome — dans
+   l'application réelle, elles sont importées, jamais recopiées.
+
+   Polices auto-hébergées, zéro CDN, zéro emoji : icônes SVG inline.
    ================================================================ */
+
+/* ---- primitives (10-primitives.css, valeurs exactes) ---- */
 :root {
-  --p-blanc:#fff; --p-neutre-0:#fdfcfa; --p-neutre-1:#faf8f4; --p-neutre-2:#f7f5f1;
-  --p-neutre-3:#e5e1d9; --p-neutre-4:#d5cfc3; --p-neutre-5:#b0aaa0; --p-neutre-6:#8f8a7e;
-  --p-neutre-7:#6a676f; --p-neutre-8:#45424b; --p-neutre-9:#16151a;
-  --p-sombre-0:#08080c; --p-sombre-1:#0c0c10; --p-sombre-2:#101014; --p-sombre-3:#14141a;
-  --p-sombre-4:#1c1c22; --p-sombre-5:#282830; --p-sombre-6:#646470; --p-sombre-7:#8b8b96;
-  --p-sombre-8:#b0aaa0; --p-sombre-9:#edeae3;
-  --p-accent-clair:#856b37; --p-accent-sombre:#c9a96e;
-  --p-accent-appuye-clair:#735d32; --p-accent-appuye-sombre:#e2c07a;
-  --p-etat-succes-clair:#12703f; --p-etat-succes-sombre:#6fcf8a;
-  --p-etat-erreur-clair:#a8302f; --p-etat-erreur-sombre:#e07070;
-  --p-etat-info-clair:#2b5a80; --p-etat-info-sombre:#8ab8e6;
-  --p-rayon-sm:12px; --p-rayon-md:20px; --p-rayon-lg:28px; --p-rayon-pilule:999px;
-  --p-duree:300ms; --p-courbe:cubic-bezier(.16,1,.3,1);
-  --fond:var(--p-neutre-0); --fond-2:var(--p-neutre-2); --surface:var(--p-blanc);
-  --surface-2:var(--p-neutre-1); --texte:var(--p-neutre-9); --texte-doux:var(--p-neutre-8);
-  --texte-discret:var(--p-neutre-7); --accent:var(--p-accent-clair);
-  --accent-appuye:var(--p-accent-appuye-clair);
-  --accent-trace:color-mix(in srgb,var(--p-accent-clair) 7%,transparent);
-  --accent-filet:color-mix(in srgb,var(--p-accent-clair) 22%,transparent);
-  --sur-accent:var(--p-blanc); --filet:var(--p-neutre-3); --filet-controle:var(--p-neutre-6);
-  --succes:var(--p-etat-succes-clair); --erreur:var(--p-etat-erreur-clair); --info:var(--p-etat-info-clair);
-  --police-titres:'Cormorant Garamond',Georgia,serif; --police-corps:system-ui,-apple-system,'Segoe UI',sans-serif;
-  color-scheme:light;
+  --p-blanc: #ffffff;
+  --p-neutre-0: #fdfcfa; --p-neutre-1: #faf8f4; --p-neutre-2: #f7f5f1;
+  --p-neutre-3: #e5e1d9; --p-neutre-4: #d5cfc3; --p-neutre-5: #b0aaa0;
+  --p-neutre-6: #8f8a7e; --p-neutre-7: #6a676f; --p-neutre-8: #45424b;
+  --p-neutre-9: #16151a;
+  --p-sombre-0: #08080c; --p-sombre-1: #0c0c10; --p-sombre-2: #101014;
+  --p-sombre-3: #14141a; --p-sombre-4: #1c1c22; --p-sombre-5: #282830;
+  --p-sombre-6: #646470; --p-sombre-7: #8b8b96; --p-sombre-8: #b0aaa0;
+  --p-sombre-9: #edeae3;
+  --p-accent-clair: #856b37;      --p-accent-sombre: #c9a96e;
+  --p-accent-appuye-clair: #735d32; --p-accent-appuye-sombre: #e2c07a;
+  --p-etat-succes-clair: #12703f; --p-etat-succes-sombre: #6fcf8a;
+  --p-etat-alerte-clair: #8a5a10; --p-etat-alerte-sombre: #e0b45f;
+  --p-etat-erreur-clair: #a8302f; --p-etat-erreur-sombre: #e07070;
+  --p-etat-info-clair: #2b5a80;   --p-etat-info-sombre: #8ab8e6;
+  --p-whatsapp: #25d366;
+  --p-rayon-sm: 12px; --p-rayon-md: 20px; --p-rayon-lg: 28px;
+  --p-rayon-pilule: 999px;
+  --p-duree-rapide: 150ms; --p-duree: 300ms; --p-duree-lente: 600ms;
+  --p-courbe-sortie: cubic-bezier(0.16, 1, 0.3, 1);
 }
-[data-theme=dark] {
-  --fond:var(--p-sombre-0); --fond-2:var(--p-sombre-1); --surface:var(--p-sombre-2);
-  --surface-2:var(--p-sombre-3); --texte:var(--p-sombre-9); --texte-doux:var(--p-sombre-8);
-  --texte-discret:var(--p-sombre-7); --accent:var(--p-accent-sombre);
-  --accent-appuye:var(--p-accent-appuye-sombre);
-  --accent-trace:color-mix(in srgb,var(--p-accent-sombre) 8%,transparent);
-  --accent-filet:color-mix(in srgb,var(--p-accent-sombre) 22%,transparent);
-  --sur-accent:#0a0a0e; --filet:var(--p-sombre-4); --filet-controle:var(--p-sombre-6);
-  --succes:var(--p-etat-succes-sombre); --erreur:var(--p-etat-erreur-sombre); --info:var(--p-etat-info-sombre);
-  color-scheme:dark;
+
+/* ---- semantic (20-semantic.css, valeurs exactes) ---- */
+:root {
+  --fond: var(--p-neutre-0);
+  --fond-2: var(--p-neutre-2);
+  --surface: var(--p-blanc);
+  --surface-2: var(--p-neutre-1);
+  --texte: var(--p-neutre-9);
+  --texte-doux: var(--p-neutre-8);
+  --texte-discret: var(--p-neutre-7);
+  --accent: var(--p-accent-clair);
+  --accent-appuye: var(--p-accent-appuye-clair);
+  --accent-trace: color-mix(in srgb, var(--p-accent-clair) 7%, transparent);
+  --accent-filet: color-mix(in srgb, var(--p-accent-clair) 22%, transparent);
+  --accent-halo: color-mix(in srgb, var(--p-accent-clair) 28%, transparent);
+  --sur-accent: var(--p-blanc);
+  --filet: var(--p-neutre-3);
+  --filet-2: var(--p-neutre-4);
+  --filet-controle: var(--p-neutre-6);
+  --succes: var(--p-etat-succes-clair);
+  --succes-trace: color-mix(in srgb, var(--p-etat-succes-clair) 6%, transparent);
+  --succes-filet: color-mix(in srgb, var(--p-etat-succes-clair) 28%, transparent);
+  --alerte: var(--p-etat-alerte-clair);
+  --alerte-trace: color-mix(in srgb, var(--p-etat-alerte-clair) 10%, transparent);
+  --alerte-filet: color-mix(in srgb, var(--p-etat-alerte-clair) 32%, transparent);
+  --erreur: var(--p-etat-erreur-clair);
+  --info: var(--p-etat-info-clair);
+  --whatsapp-texte: var(--p-etat-succes-clair);
+  --police-titres: 'Cormorant Garamond', Georgia, serif;
+  --police-corps: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --police-chiffres: var(--police-corps);
+  color-scheme: light;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--police-corps);background:var(--fond);color:var(--texte);overscroll-behavior:none;touch-action:manipulation;-webkit-font-smoothing:antialiased}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input{font-family:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-.app{max-width:520px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
-.contenu{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:16px 16px 104px}
-.squelette{border-radius:8px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--filet) 50%,var(--surface-2) 75%);background-size:200% 100%;animation:ondulation 1.2s infinite;height:14px}
-@keyframes ondulation{from{background-position:200% 0}to{background-position:-200% 0}}
-@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}.squelette{animation:none}}
-.ecran{animation:revelation var(--p-duree,300ms) cubic-bezier(.16,1,.3,1)}
-@keyframes revelation{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.contenu>div{animation:revelation 300ms cubic-bezier(.16,1,.3,1)}
-.bouton:active,.envoyer:active,.onglet:active,.action:active{transform:scale(.96)}
-.bouton,.envoyer,.action,.onglet{transition:transform 150ms cubic-bezier(.16,1,.3,1),background-color 150ms,box-shadow 150ms}
-.action-primaire .pastille-icone,.bouton-central{box-shadow:0 6px 20px var(--accent-halo,rgba(201,169,110,.3))}
-.conv:active{transform:scale(.98)}
+[data-theme='dark'] {
+  --fond: var(--p-sombre-0);
+  --fond-2: var(--p-sombre-1);
+  --surface: var(--p-sombre-2);
+  --surface-2: var(--p-sombre-3);
+  --texte: var(--p-sombre-9);
+  --texte-doux: var(--p-sombre-8);
+  --texte-discret: var(--p-sombre-7);
+  --accent: var(--p-accent-sombre);
+  --accent-appuye: var(--p-accent-appuye-sombre);
+  --accent-trace: color-mix(in srgb, var(--p-accent-sombre) 8%, transparent);
+  --accent-filet: color-mix(in srgb, var(--p-accent-sombre) 22%, transparent);
+  --accent-halo: color-mix(in srgb, var(--p-accent-sombre) 40%, transparent);
+  --sur-accent: #0a0a0e;
+  --filet: var(--p-sombre-4);
+  --filet-2: var(--p-sombre-5);
+  --filet-controle: var(--p-sombre-6);
+  --succes: var(--p-etat-succes-sombre);
+  --succes-trace: color-mix(in srgb, var(--p-etat-succes-sombre) 10%, transparent);
+  --succes-filet: color-mix(in srgb, var(--p-etat-succes-sombre) 30%, transparent);
+  --alerte: var(--p-etat-alerte-sombre);
+  --alerte-trace: color-mix(in srgb, var(--p-etat-alerte-sombre) 10%, transparent);
+  --alerte-filet: color-mix(in srgb, var(--p-etat-alerte-sombre) 32%, transparent);
+  --erreur: var(--p-etat-erreur-sombre);
+  --info: var(--p-etat-info-sombre);
+  --whatsapp-texte: var(--p-whatsapp);
+  color-scheme: dark;
+}
 
-/* bandeau hors ligne */
-.bandeau-hors-ligne{display:none;align-items:center;gap:8px;justify-content:center;padding:8px 16px;font-size:12.5px;font-weight:500;background:color-mix(in srgb,var(--erreur) 12%,transparent);color:var(--erreur);border-bottom:1px solid color-mix(in srgb,var(--erreur) 30%,transparent)}
-.hors-ligne .bandeau-hors-ligne{display:flex}
-/* carte d'actions sur elevee (maquette validee) */
-.carte-actions{background:var(--surface);border:1px solid var(--filet-controle);border-radius:var(--p-rayon-md,20px);padding:16px;margin-bottom:14px;box-shadow:0 8px 28px color-mix(in srgb,var(--p-neutre-9) 10%,transparent)}
-.rangee{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.action{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 4px;border-radius:12px}
-.pastille-icone{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--accent-trace);color:var(--accent);border:1px solid var(--accent-filet)}
-.action-primaire .pastille-icone{background:var(--accent);color:var(--sur-accent);border-color:var(--accent)}
-.action span{font-size:12px;font-weight:500}
-/* nav 5 colonnes + bouton central */
-.nav-basse{position:absolute;bottom:0;left:0;right:0;height:86px;background:var(--surface);border-top:1px solid var(--filet);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:6px 8px calc(10px + env(safe-area-inset-bottom))}
-.bouton-central{width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;box-shadow:0 8px 24px var(--accent-halo,rgba(201,169,110,.28)),0 2px 8px color-mix(in srgb,var(--p-neutre-9) 20%,transparent);position:relative;top:-14px}
-.voile{position:absolute;inset:0;background:color-mix(in srgb,var(--p-neutre-9) 45%,transparent);opacity:0;pointer-events:none;transition:opacity var(--p-duree,300ms) cubic-bezier(.16,1,.3,1);z-index:10}
-.ouverte .voile{opacity:1;pointer-events:auto}
-.modale-direct{position:absolute;left:8px;right:8px;bottom:8px;top:56px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-md,20px);transform:translateY(40px);opacity:0;pointer-events:none;transition:transform var(--p-duree,300ms) cubic-bezier(.16,1,.3,1),opacity var(--p-duree,300ms);display:flex;flex-direction:column;overflow:hidden;z-index:11}
-.ouverte .modale-direct{transform:none;opacity:1;pointer-events:auto}
-.fils{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;display:flex;flex-direction:column;gap:9px}
-.carte-qr{display:grid;place-items:center;padding:16px;background:#ffffff;border-radius:12px;margin-bottom:12px}
+/* ---- polices auto-hébergées ---- */
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-400.woff2') format('woff2'); font-weight:400; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-500.woff2') format('woff2'); font-weight:500; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
+@font-face { font-family:'DM Sans'; src:url('polices/dm-sans-700.woff2') format('woff2'); font-weight:700; font-display:swap; }
+@font-face { font-family:'Cormorant Garamond'; src:url('polices/cormorant-garamond-600.woff2') format('woff2'); font-weight:600; font-display:swap; }
 
-/* entête */
-.entete{display:flex;align-items:center;gap:10px;padding:16px 16px 12px;border-bottom:1px solid var(--filet)}
-.logo{width:38px;height:38px;border-radius:12px;object-fit:cover;flex-shrink:0}
-.entete .t{flex:1;min-width:0}
-.entete .t b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.entete .t small{font-size:12px;color:var(--texte-discret)}
-select.sites{background:var(--surface-2);border:1px solid var(--filet-controle);border-radius:var(--p-rayon-pilule);color:var(--texte-doux);font-size:12px;padding:7px 10px;max-width:150px}
+/* ---- base ---- */
+* { margin:0; padding:0; box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family:var(--police-corps); background:var(--fond-2); color:var(--texte);
+  min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:24px 12px;
+  transition:background-color var(--p-duree) var(--p-courbe-sortie), color var(--p-duree) var(--p-courbe-sortie);
+}
+button { font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
 
-/* connexions */
-.carte-connexion{max-width:400px;margin:10vh auto 0;padding:28px 24px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-lg)}
-h1.titre{font-family:var(--police-titres);font-size:30px;font-weight:600;margin-bottom:4px}
-.sous{font-size:13.5px;color:var(--texte-discret);margin-bottom:22px;line-height:1.5}
-.champ{margin-bottom:14px}
-.champ label{display:block;font-size:12.5px;font-weight:600;color:var(--texte-doux);margin-bottom:6px}
-.champ input{width:100%;padding:12px 14px;border-radius:var(--p-rayon-sm);border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px}
-.champ-input{width:100%;padding:12px 14px;border-radius:var(--p-rayon-sm);border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px;font-family:inherit}
-.bouton{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:var(--p-rayon-pilule);background:var(--accent);color:var(--sur-accent);font-size:15px;font-weight:600;transition:background-color var(--p-duree) var(--p-courbe)}
-.bouton:hover{background:var(--accent-appuye)}
-.bouton:disabled{opacity:.6}
-.erreur{padding:11px 14px;border-radius:var(--p-rayon-sm);background:color-mix(in srgb,var(--erreur) 10%,transparent);border:1px solid color-mix(in srgb,var(--erreur) 30%,transparent);color:var(--erreur);font-size:13px;margin-bottom:14px}
-.info{padding:11px 14px;border-radius:var(--p-rayon-sm);background:color-mix(in srgb,var(--info) 10%,transparent);border:1px solid color-mix(in srgb,var(--info) 30%,transparent);color:var(--info);font-size:13px;margin-bottom:14px}
+.telephone {
+  width:390px; max-width:100%; background:var(--fond); min-height:844px;
+  border:1px solid var(--filet); border-radius:36px; overflow:hidden;
+  display:flex; flex-direction:column; position:relative;
+  transition:background-color var(--p-duree) var(--p-courbe-sortie);
+  box-shadow:0 24px 64px color-mix(in srgb, var(--p-neutre-9) 18%, transparent);
+}
+@media (max-width:430px){ body{padding:0} .telephone{border-radius:0; border:none; min-height:100vh} }
 
-/* KPI */
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.kpi{background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-md);padding:16px}
-.kpi .v{font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
-.kpi.insistant{border-color:var(--accent-filet);background:var(--accent-trace)}
-.kpi.insistant .v{color:var(--accent-appuye)}
-.kpi .l{font-size:11.5px;color:var(--texte-discret);margin-top:5px}
-.titre-section{font-family:var(--police-titres);font-size:25px;font-weight:600;margin:4px 0 2px}
-.sous-titre{font-size:12.5px;color:var(--texte-discret);margin-bottom:14px}
+/* ---- en-tete ---- */
+.entete {
+  display:flex; align-items:center; gap:10px; padding:18px 20px 12px;
+  border-bottom:1px solid var(--filet); background:var(--fond);
+}
+.logo-mia {
+  width:38px; height:38px; border-radius:var(--p-rayon-sm);
+  background:var(--accent); color:var(--sur-accent);
+  display:grid; place-items:center; font-family:var(--police-titres);
+  font-size:22px; font-weight:600; flex-shrink:0;
+}
+.entete .titre-site { display:flex; flex-direction:column; min-width:0; flex:1; }
+.entete .titre-site b { font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.entete .titre-site span { font-size:12px; color:var(--texte-discret); display:flex; align-items:center; gap:5px; }
+.point-vivant { width:7px; height:7px; border-radius:50%; background:var(--succes); display:inline-block; }
+.icone-bouton {
+  width:40px; height:40px; border-radius:var(--p-rayon-sm); display:grid; place-items:center;
+  color:var(--texte-doux); position:relative; transition:background-color var(--p-duree-rapide) var(--p-courbe-sortie);
+}
+.icone-bouton:hover { background:var(--surface-2); }
+.pastille-non-lues {
+  position:absolute; top:4px; right:4px; min-width:16px; height:16px; padding:0 4px;
+  border-radius:var(--p-rayon-pilule); background:var(--accent-appuye); color:var(--sur-accent);
+  font-size:10px; font-weight:700; display:grid; place-items:center;
+}
+.secteur-puce {
+  font-size:12px; font-weight:600; color:var(--accent); border:1px solid var(--accent-filet);
+  background:var(--accent-trace); padding:6px 12px; border-radius:var(--p-rayon-pilule);
+  display:inline-flex; align-items:center; gap:6px;
+}
 
-/* conversations */
-.conv{display:flex;gap:11px;padding:13px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-md);margin-bottom:9px;width:100%;text-align:left;transition:border-color var(--p-duree)}
-.conv.non-lu{border-left:3px solid var(--accent)}
-.avatar{width:40px;height:40px;border-radius:50%;background:var(--surface-2);border:1px solid var(--filet);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--texte-doux);flex-shrink:0}
-.conv .c{flex:1;min-width:0}
-.conv .l1{display:flex;justify-content:space-between;gap:8px}
-.conv .l1 b{font-size:14px}
-.conv .l1 time{font-size:11px;color:var(--texte-discret)}
-.conv .ap{font-size:13px;color:var(--texte-doux);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.etq{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:var(--p-rayon-pilule);margin-top:6px;margin-right:5px}
-.etq.lead{color:var(--succes);background:color-mix(in srgb,var(--succes) 10%,transparent);border:1px solid color-mix(in srgb,var(--succes) 30%,transparent)}
-.etq.esc{color:var(--info);background:color-mix(in srgb,var(--info) 10%,transparent);border:1px solid color-mix(in srgb,var(--info) 30%,transparent)}
+/* ---- contenu ---- */
+.contenu { flex:1; overflow-y:auto; padding:16px 16px 96px; }
+.ecran { display:none; animation:revelation var(--p-duree) var(--p-courbe-sortie); }
+.ecran.actif { display:block; }
+@keyframes revelation { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .ecran { animation:none } * { transition-duration:0.01ms !important } }
 
-/* fil messages */
-.fil{display:flex;flex-direction:column;gap:9px;padding:14px 0}
-.bulle{max-width:82%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.45}
-.bulle.mia{align-self:flex-start;background:var(--surface-2);border:1px solid var(--filet);border-bottom-left-radius:5px}
-.bulle.visiteur{align-self:flex-end;background:var(--accent);color:var(--sur-accent);border-bottom-right-radius:5px}
-.bulle .qui{display:block;font-size:10px;opacity:.7;margin-top:4px}
-.composeur{display:flex;gap:8px;padding:12px 0}
-.composeur input{flex:1;padding:12px 16px;border-radius:var(--p-rayon-pilule);border:1px solid var(--filet-controle);background:var(--surface);color:var(--texte);font-size:14px}
-.composeur .envoyer{width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;flex-shrink:0}
-.bandeau-main{display:flex;gap:8px;margin-bottom:12px}
-.bandeau-main .bouton{width:auto;flex:1;padding:10px}
+.titre-section { font-family:var(--police-titres); font-size:26px; font-weight:600; line-height:1.1; margin:6px 0 2px; }
+.sous-titre { font-size:13px; color:var(--texte-discret); margin-bottom:16px; }
 
-/* nav basse */
-.nav-basse{position:absolute;bottom:0;left:0;right:0;height:86px;background:var(--surface);border-top:1px solid var(--filet);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom));z-index:20}
-.onglet{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--texte-discret);font-size:11px;font-weight:500;padding:8px 0}
-.onglet[aria-current=page]{color:var(--accent);font-weight:600}
-.onglet .pastille{min-width:16px;height:16px;border-radius:var(--p-rayon-pilule);background:var(--accent-appuye);color:var(--sur-accent);font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;margin-left:4px}
-.etat-vide{text-align:center;padding:48px 20px}
-.etat-vide h3{font-family:var(--police-titres);font-size:22px;font-weight:600;margin-bottom:6px}
-.etat-vide p{font-size:13.5px;color:var(--texte-discret);max-width:280px;margin:0 auto 16px;line-height:1.5}
-.retour{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:13.5px;font-weight:600;margin-bottom:10px}
+/* ---- KPI (reference Jeko : chiffres en gros) ---- */
+.kpis { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.kpi {
+  background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md);
+  padding:16px; transition:border-color var(--p-duree-rapide);
+}
+.kpi .valeur { font-family:var(--police-chiffres); font-size:34px; font-weight:700; line-height:1; letter-spacing:-0.5px; }
+.kpi .libelle { font-size:12px; color:var(--texte-discret); margin-top:6px; }
+.kpi.insistant { border-color:var(--accent-filet); background:var(--accent-trace); }
+.kpi.insistant .valeur { color:var(--accent-appuye); }
+
+/* ---- carte d'actions sur elevee (reference Jeko) ---- */
+.carte-actions {
+  background:var(--surface); border:1px solid var(--filet-controle); border-radius:var(--p-rayon-lg);
+  padding:18px; margin-bottom:14px; box-shadow:0 8px 28px color-mix(in srgb, var(--p-neutre-9) 10%, transparent);
+}
+.carte-actions .rangée { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.action { display:flex; flex-direction:column; align-items:center; gap:8px; padding:10px 4px; border-radius:var(--p-rayon-sm); transition:background-color var(--p-duree-rapide); }
+.action:hover { background:var(--surface-2); }
+.action .pastille-icone {
+  width:52px; height:52px; border-radius:50%; display:grid; place-items:center;
+  background:var(--accent-trace); color:var(--accent); border:1px solid var(--accent-filet);
+}
+.action.action-primaire .pastille-icone { background:var(--accent); color:var(--sur-accent); border-color:var(--accent); }
+.action span { font-size:12px; font-weight:500; text-align:center; }
+.badge-bientot {
+  font-size:9px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase;
+  color:var(--texte-discret); border:1px solid var(--filet-2); border-radius:var(--p-rayon-pilule);
+  padding:2px 7px; margin-top:2px;
+}
+
+/* ---- conversation ---- */
+.filtres { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; }
+.filtre {
+  padding:8px 14px; border-radius:var(--p-rayon-pilule); border:1px solid var(--filet-controle);
+  font-size:13px; font-weight:500; color:var(--texte-doux); white-space:nowrap;
+  transition:all var(--p-duree-rapide) var(--p-courbe-sortie);
+}
+.filtre.actif { background:var(--accent); border-color:var(--accent); color:var(--sur-accent); font-weight:600; }
+.conversation {
+  display:flex; gap:12px; padding:14px; background:var(--surface); border:1px solid var(--filet);
+  border-radius:var(--p-rayon-md); margin-bottom:10px; align-items:flex-start;
+  transition:border-color var(--p-duree-rapide), transform var(--p-duree-rapide) var(--p-courbe-sortie);
+}
+.conversation:hover { border-color:var(--filet-controle); }
+.conversation.non-lu { border-left:3px solid var(--accent); }
+.avatar {
+  width:42px; height:42px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+  background:var(--surface-2); color:var(--texte-doux); font-weight:700; font-size:15px;
+  border:1px solid var(--filet);
+}
+.corps-conv { flex:1; min-width:0; }
+.ligne-1 { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+.ligne-1 b { font-size:14px; font-weight:600; }
+.ligne-1 time { font-size:11px; color:var(--texte-discret); flex-shrink:0; }
+.apercu { font-size:13px; color:var(--texte-doux); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.etiquettes { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
+.etiquette { font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:var(--p-rayon-pilule); }
+.etiquette.escalade { color:var(--alerte); background:var(--alerte-trace); border:1px solid var(--alerte-filet); }
+.etiquette.lead { color:var(--succes); background:var(--succes-trace); border:1px solid var(--succes-filet); }
+.etiquette.humain { color:var(--info); background:color-mix(in srgb, var(--info) 8%, transparent); border:1px solid color-mix(in srgb, var(--info) 30%, transparent); }
+
+/* ---- analyses ---- */
+.bloc-analyse { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); padding:16px; margin-bottom:12px; }
+.bloc-analyse h3 { font-size:13px; font-weight:600; color:var(--texte-doux); margin-bottom:12px; }
+.barre { display:grid; grid-template-columns:110px 1fr 30px; gap:10px; align-items:center; margin-bottom:9px; font-size:12.5px; }
+.barre .nom { color:var(--texte-doux); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.barre .piste { height:10px; border-radius:var(--p-rayon-pilule); background:var(--surface-2); overflow:hidden; }
+.barre .plein { height:100%; border-radius:inherit; background:var(--accent); transition:width var(--p-duree-lente) var(--p-courbe-sortie); }
+.barre .nombre { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+.chiffres-jour { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.chiffre-jour .n { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; }
+.chiffre-jour .l { font-size:11px; color:var(--texte-discret); margin-top:2px; }
+
+/* ---- reglages ---- */
+.groupe-reglages { background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-md); margin-bottom:14px; overflow:hidden; }
+.groupe-reglages .titre-groupe { font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--texte-discret); padding:14px 16px 6px; }
+.ligne-reglage {
+  width:100%; display:flex; align-items:center; gap:12px; padding:13px 16px; text-align:left;
+  border-bottom:1px solid var(--filet); transition:background-color var(--p-duree-rapide);
+}
+.ligne-reglage:last-child { border-bottom:none; }
+.ligne-reglage:hover { background:var(--surface-2); }
+.ligne-reglage .icone-ligne { width:34px; height:34px; border-radius:10px; background:var(--surface-2); display:grid; place-items:center; color:var(--accent); flex-shrink:0; }
+.ligne-reglage .texte-ligne { flex:1; min-width:0; }
+.ligne-reglage .texte-ligne b { display:block; font-size:14px; font-weight:500; }
+.ligne-reglage .texte-ligne small { font-size:12px; color:var(--texte-discret); }
+.ligne-reglage .chevron { color:var(--texte-discret); flex-shrink:0; }
+
+/* interrupteur */
+.interrupteur { width:44px; height:26px; border-radius:var(--p-rayon-pilule); background:var(--filet-2); position:relative; transition:background-color var(--p-duree-rapide); flex-shrink:0; }
+.interrupteur::after { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:var(--surface); box-shadow:0 1px 3px color-mix(in srgb, var(--p-neutre-9) 25%, transparent); transition:transform var(--p-duree-rapide) var(--p-courbe-sortie); }
+.interrupteur[aria-checked="true"] { background:var(--accent); }
+.interrupteur[aria-checked="true"]::after { transform:translateX(18px); }
+
+/* compétence */
+.competence { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--filet); }
+.competence:last-child { border-bottom:none; }
+.competence .p { flex:1; }
+.competence .p b { font-size:14px; font-weight:500; display:block; }
+.competence .p small { font-size:12px; color:var(--texte-discret); }
+
+/* ---- premium : badge, verrou, matrice ---- */
+.badge-premium {
+  font-size:9px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase;
+  color:var(--sur-accent); background:var(--accent); border-radius:var(--p-rayon-pilule);
+  padding:3px 8px; flex-shrink:0;
+}
+.ligne-reglage.verrouillee { opacity:1; }
+.ligne-reglage.verrouillee .icone-ligne { color:var(--texte-discret); }
+.ligne-reglage.verrouillee .texte-ligne b { color:var(--texte-doux); }
+.cadenas { color:var(--texte-discret); flex-shrink:0; display:grid; place-items:center; }
+
+.matrice { width:100%; border-collapse:collapse; font-size:12px; }
+.matrice th { font-weight:600; color:var(--texte-discret); padding:8px 4px; text-align:center; font-size:11px; }
+.matrice th.premiere, .matrice td.premiere { text-align:left; font-weight:500; color:var(--texte-doux); padding-left:2px; }
+.matrice td { padding:9px 4px; text-align:center; border-top:1px solid var(--filet); }
+.matrice .interrupteur { display:inline-block; transform:scale(0.82); transform-origin:center; }
+.matrice .canal-futur { display:inline-flex; flex-direction:column; align-items:center; gap:2px; }
+.matrice .bientot { font-size:8.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--texte-discret); }
+.matrice td.canal-inactif { opacity:0.75; }
+
+/* modale upgrade */
+.modale-upgrade { position:absolute; inset:0; display:none; z-index:12; align-items:flex-end; }
+.ouverte-upgrade .modale-upgrade { display:flex; }
+.modale-upgrade .feuille {
+  width:100%; background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-lg) var(--p-rayon-lg) 0 0;
+  padding:22px 20px calc(18px + env(safe-area-inset-bottom));
+  transform:translateY(100%); transition:transform var(--p-duree) var(--p-courbe-sortie);
+}
+.ouverte-upgrade .feuille { transform:none; }
+.feuille .poignee { width:40px; height:4px; border-radius:var(--p-rayon-pilule); background:var(--filet-2); margin:0 auto 16px; }
+.feuille h3 { font-family:var(--police-titres); font-size:24px; font-weight:600; margin-bottom:4px; }
+.feuille .sous { font-size:13px; color:var(--texte-discret); margin-bottom:16px; line-height:1.5; }
+.feuille .avantages { list-style:none; margin-bottom:18px; }
+.feuille .avantages li { display:flex; gap:10px; align-items:flex-start; padding:7px 0; font-size:13.5px; color:var(--texte-doux); }
+.feuille .avantages li svg { flex-shrink:0; margin-top:2px; color:var(--succes); }
+.feuille .bouton { width:100%; justify-content:center; }
+.feuille .resultat {
+  display:none; text-align:center; padding:18px 14px; border-radius:var(--p-rayon-md);
+  background:var(--accent-trace); border:1px solid var(--accent-filet); margin-top:4px;
+}
+.feuille .resultat.visible { display:block; }
+.feuille .resultat b { display:block; font-size:14.5px; margin-bottom:6px; }
+.feuille .resultat p { font-size:12.5px; color:var(--texte-doux); line-height:1.5; }
+.feuille .flux-paiement { display:none; }
+.feuille .flux-paiement.visible { display:block; }
+
+/* compte : consentement */
+.note-consent { font-size:11.5px; color:var(--texte-discret); padding:0 16px 12px; line-height:1.5; display:none; }
+.note-consent.visible { display:block; }
+
+/* ---- etats ---- */
+.etat-vide { text-align:center; padding:40px 24px; }
+.etat-vide .illustration { width:88px; height:88px; margin:0 auto 14px; border-radius:50%; background:var(--surface-2); display:grid; place-items:center; color:var(--texte-discret); }
+.etat-vide h3 { font-family:var(--police-titres); font-size:22px; font-weight:600; margin-bottom:6px; }
+.etat-vide p { font-size:13.5px; color:var(--texte-discret); max-width:260px; margin:0 auto 16px; line-height:1.5; }
+.bouton {
+  display:inline-flex; align-items:center; gap:8px; padding:12px 22px;
+  border-radius:var(--p-rayon-pilule); background:var(--accent); color:var(--sur-accent);
+  font-size:14px; font-weight:600; transition:background-color var(--p-duree-rapide);
+}
+.bouton:hover { background:var(--accent-appuye); }
+.bouton.secondaire { background:transparent; color:var(--accent); border:1px solid var(--accent-filet); }
+.squelette { border-radius:8px; background:linear-gradient(90deg, var(--surface-2) 25%, var(--filet) 50%, var(--surface-2) 75%); background-size:200% 100%; animation:ondulation 1.2s infinite; }
+@keyframes ondulation { from { background-position:200% 0 } to { background-position:-200% 0 } }
+@media (prefers-reduced-motion: reduce) { .squelette { animation:none } }
+
+/* ---- bandeau hors ligne ---- */
+.bandeau-hors-ligne {
+  display:none; align-items:center; gap:8px; justify-content:center; gap:8px;
+  padding:8px 16px; font-size:12.5px; font-weight:500;
+  background:var(--alerte-trace); color:var(--alerte); border-bottom:1px solid var(--alerte-filet);
+}
+.hors-ligne .bandeau-hors-ligne { display:flex; }
+
+/* ---- barre de navigation basse + bouton central ---- */
+.nav-basse {
+  position:absolute; bottom:0; left:0; right:0; height:84px;
+  background:var(--surface); border-top:1px solid var(--filet);
+  display:grid; grid-template-columns:repeat(5,1fr); align-items:center;
+  padding:6px 8px calc(10px + env(safe-area-inset-bottom));
+}
+.onglet { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 0; color:var(--texte-discret); font-size:11px; font-weight:500; border-radius:var(--p-rayon-sm); transition:color var(--p-duree-rapide); }
+.onglet[aria-current="page"] { color:var(--accent); font-weight:600; }
+.bouton-central {
+  width:58px; height:58px; margin:-26px auto 0; border-radius:50%;
+  background:var(--accent); color:var(--sur-accent); display:grid; place-items:center;
+  box-shadow:0 8px 24px var(--accent-halo), 0 2px 8px color-mix(in srgb, var(--p-neutre-9) 20%, transparent);
+  transition:transform var(--p-duree-rapide) var(--p-courbe-sortie), background-color var(--p-duree-rapide);
+  position:relative; top:-14px;
+}
+.bouton-central:hover { background:var(--accent-appuye); transform:translateY(-2px); }
+.bouton-central:active { transform:scale(0.96); }
+
+/* ---- modale Mia en direct ---- */
+.voile { position:absolute; inset:0; background:color-mix(in srgb, var(--p-neutre-9) 45%, transparent); opacity:0; pointer-events:none; transition:opacity var(--p-duree) var(--p-courbe-sortie); z-index:10; }
+.modale-direct {
+  position:absolute; left:8px; right:8px; bottom:8px; top:60px;
+  background:var(--surface); border:1px solid var(--filet); border-radius:var(--p-rayon-lg);
+  transform:translateY(40px); opacity:0; pointer-events:none;
+  transition:transform var(--p-duree) var(--p-courbe-sortie), opacity var(--p-duree) var(--p-courbe-sortie);
+  display:flex; flex-direction:column; overflow:hidden; z-index:11;
+}
+.ouverte .voile { opacity:1; pointer-events:auto; }
+.ouverte .modale-direct { transform:none; opacity:1; pointer-events:auto; }
+.modale-direct .tete { display:flex; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid var(--filet); }
+.modale-direct .tete b { font-size:15px; }
+.modale-direct .tete small { display:block; font-size:12px; color:var(--succes); }
+.fils { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.bulle { max-width:78%; padding:11px 14px; border-radius:18px; font-size:13.5px; line-height:1.45; }
+.bulle.mia { align-self:flex-start; background:var(--surface-2); border:1px solid var(--filet); border-bottom-left-radius:6px; }
+.bulle.visiteur { align-self:flex-end; background:var(--accent); color:var(--sur-accent); border-bottom-right-radius:6px; }
+.bulle .heure { display:block; font-size:10px; margin-top:4px; opacity:0.7; }
+.composeur { display:flex; gap:8px; padding:12px; border-top:1px solid var(--filet); background:var(--fond); }
+.composeur input {
+  flex:1; padding:12px 16px; border-radius:var(--p-rayon-pilule); border:1px solid var(--filet-controle);
+  background:var(--fond); color:var(--texte); font-family:inherit; font-size:14px;
+}
+.composeur .envoyer { width:46px; height:46px; border-radius:50%; background:var(--accent); color:var(--sur-accent); display:grid; place-items:center; flex-shrink:0; }
+.suggestion { font-size:12px; padding:8px 13px; border-radius:var(--p-rayon-pilule); border:1px solid var(--accent-filet); color:var(--accent); background:var(--accent-trace); }
+
+/* ---- commande de maquette (hors telephone) ---- */
+.commande { position:fixed; top:12px; right:12px; display:flex; gap:8px; z-index:50; }
+.commande button {
+  padding:9px 14px; border-radius:var(--p-rayon-pilule); font-size:12px; font-weight:600;
+  background:var(--surface); border:1px solid var(--filet-controle); color:var(--texte-doux);
+  box-shadow:0 2px 10px color-mix(in srgb, var(--p-neutre-9) 12%, transparent);
+}
+.legende { text-align:center; font-size:12px; color:var(--texte-discret); margin-top:14px; max-width:390px; }
 </style>
 </head>
 <body>
-<div id="racine"></div>
-<script src="vendor/qrcode.min.js"></script>
-<script type="importmap">
-{ "imports": { "preact": "./vendor/preact.module.js", "preact/hooks": "./vendor/hooks.module.js" } }
-</script>
-<script type="module">
-import { h, render } from './vendor/preact.module.js';
-import { useState, useEffect, useRef, useCallback } from './vendor/hooks.module.js';
-import htm from './vendor/htm.module.js';
-const html = htm.bind(h);
 
-/* ================= API — contrat API-CLIENT-V1, le code fait foi ================= */
-const API = 'https://web-production-4ab53.up.railway.app/api/client/v1';
-const AUTH = 'https://web-production-4ab53.up.railway.app/api/auth';
-const jeton = {
-  lire: () => localStorage.getItem('mia-jeton'),
-  ecrire: (v, jours) => localStorage.setItem('mia-jeton', v),
-  effacer: () => localStorage.removeItem('mia-jeton'),
-};
-async function api(chemin, options = {}) {
-  const entetes = { ...(options.headers || {}) };
-  if (options.corps !== undefined) entetes['Content-Type'] = 'application/json';
-  const j = jeton.lire();
-  if (j) entetes['Authorization'] = 'Bearer ' + j;
-  const r = await fetch(API + chemin, {
-    method: options.methode || (options.corps !== undefined ? 'POST' : 'GET'),
-    headers: entetes,
-    body: options.corps !== undefined ? JSON.stringify(options.corps) : undefined,
-  });
-  if (r.status === 401 && !chemin.includes('/auth/')) { jeton.effacer(); location.reload(); throw { statut: 401 }; }
-  const corps = await r.json().catch(() => ({}));
-  if (!r.ok) throw { statut: r.status, ...corps };
-  return corps;
-}
+<div class="commande">
+  <button id="bascule-theme" aria-pressed="false">Thème sombre</button>
+  <button id="bascule-hors-ligne">Hors ligne</button>
+</div>
 
-/* ================= suivi d'usage — local-first, event_id UUID ================= */
-const file = JSON.parse(localStorage.getItem('mia-file') || '[]');
-function suivi(type, metadata = {}) {
-  file.push({ event_id: crypto.randomUUID(), type, date_evenement: new Date().toISOString(), metadata });
-  localStorage.setItem('mia-file', JSON.stringify(file.slice(-500)));
-  viderFile();
-}
-async function viderFile() {
-  if (!file.length || !jeton.lire()) return;
-  const lot = file.splice(0, 100);
-  try { await api('/analytics/event', { corps: { installation_id: localStorage.getItem('mia-installation'), evenements: lot } }); }
-  catch { file.unshift(...lot); localStorage.setItem('mia-file', JSON.stringify(file)); }
-}
-if (!localStorage.getItem('mia-installation')) localStorage.setItem('mia-installation', crypto.randomUUID());
+<div class="telephone" id="telephone">
 
-/* ================= utilitaires ================= */
-const estAdmin = moi => (moi?.role_client || '') === 'client_admin';
-const initiale = n => (n || '?').trim().charAt(0).toUpperCase();
-const heureCourte = iso => iso ? new Date(iso).toLocaleTimeString('fr', { hour: '2-digit', minute: '2-digit' }) : '';
-const jourCourte = iso => iso ? new Date(iso).toLocaleDateString('fr', { day: 'numeric', month: 'short' }) : '';
-const relatif = iso => { if (!iso) return ''; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 60 ? `${m} min` : m < 1440 ? `${Math.round(m/60)} h` : jourCourte(iso); };
-const Icone = {
-  accueil: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>`,
-  conv: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  cloche: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
-  compte: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`,
-  retour: () => html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>`,
-  enseigner: () => html`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a4.5 4.5 0 0 0-4.5 4.5c0 1.2.5 2.3 1.3 3.1-.5.6-.8 1.4-.8 2.4a4 4 0 0 0 4 4h.5V21"/><path d="M12 3a4.5 4.5 0 0 1 4.5 4.5c0 1.2-.5 2.3-1.3 3.1.5.6.8 1.4.8 2.4a4 4 0 0 1-4 4"/></svg>`,
-  envoyer: () => html`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
-};
+  <div class="bandeau-hors-ligne" role="status">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 8v5M12 16.5v.5M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+    Hors ligne — conversations récentes consultables, envoi en attente
+  </div>
 
-/* ================= écran Connexion (2FA + changement forcé) ================= */
-function Connexion({ apresConnexion }) {
-  const [etape, setEtape] = useState('identifiants'); // identifiants | tfa | motdepasse
-  const [email, setEmail] = useState(''); const [mdp, setMdp] = useState(''); const [code, setCode] = useState('');
-  const [erreur, setErreur] = useState(''); const [charge, setCharge] = useState(false);
-  const [tokenTemp, setTokenTemp] = useState('');
-
-  async function seConnecter() {
-    setErreur(''); setCharge(true);
-    try {
-      const r = await fetch(AUTH + '/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: mdp }) });
-      const c = await r.json().catch(() => ({}));
-      if (r.status === 401 && c.detail === '2fa_requise') { setErreur(''); setEtape('tfa'); setCharge(false); return; }
-      if (!r.ok) { setErreur(c.detail || 'Identifiants incorrects'); setCharge(false); return; }
-      jeton.ecrire(c.access_token);
-      suivi('app_open');
-      if (c.must_change_password) { setTokenTemp(c.access_token); setEtape('motdepasse'); setCharge(false); return; }
-      apresConnexion();
-    } catch { setErreur('Serveur injoignable — réessayez'); setCharge(false); }
-  }
-  async function verifier2FA() {
-    setErreur(''); setCharge(true);
-    try {
-      const r = await fetch(AUTH + '/login/json', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: mdp, totp_code: code }) });
-      const c = await r.json().catch(() => ({}));
-      if (!r.ok) { setErreur(c.detail || 'Code invalide'); setCharge(false); return; }
-      jeton.ecrire(c.access_token); suivi('app_open');
-      if (c.must_change_password) { setTokenTemp(c.access_token); setEtape('motdepasse'); setCharge(false); return; }
-      apresConnexion();
-    } catch { setErreur('Serveur injoignable'); setCharge(false); }
-  }
-  async function changerMdp() {
-    setErreur(''); setCharge(true);
-    try {
-      const r = await fetch(API + '/password', { method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (tokenTemp || jeton.lire()) },
-        body: JSON.stringify({ ancien_mot_de_passe: mdp, nouveau_mot_de_passe: code }) });
-      const c = await r.json().catch(() => ({}));
-      if (!r.ok) { setErreur(c.detail || 'Mot de passe refusé (8 caractères minimum)'); setCharge(false); return; }
-      setCharge(false); apresConnexion();
-    } catch { setErreur('Serveur injoignable'); setCharge(false); }
-  }
-
-  return html`
-    <div class="carte-connexion">
-      <h1 class="titre">Mia</h1>
-      <p class="sous">${etape === 'identifiants' && 'Connectez-vous pour gérer le chatbot de votre site.'}
-         ${etape === 'tfa' && 'Votre compte est protégé par la double authentification. Saisissez le code de votre application d\u2019authentification.'}
-         ${etape === 'motdepasse' && 'Votre mot de passe est temporaire : choisissez le vôtre pour continuer (8 caractères minimum).'}</p>
-      ${erreur && html`<div class="erreur" role="alert">${erreur}</div>`}
-      ${etape === 'identifiants' && html`
-        <div class="champ"><label for="email">E-mail</label>
-          <input id="email" type="email" value=${email} onInput=${e => setEmail(e.target.value)} autocomplete="username" /></div>
-        <div class="champ"><label for="mdp">Mot de passe</label>
-          <input id="mdp" type="password" value=${mdp} onInput=${e => setMdp(e.target.value)} onKeyDown=${e => e.key === 'Enter' && seConnecter()} autocomplete="current-password" /></div>
-        <button class="bouton" onClick=${seConnecter} disabled=${charge}>${charge ? 'Connexion…' : 'Se connecter'}</button>`}
-      ${etape === 'tfa' && html`
-        <div class="champ"><label for="code">Code à 6 chiffres</label>
-          <input id="code" inputmode="numeric" maxlength="6" value=${code} onInput=${e => setCode(e.target.value)} onKeyDown=${e => e.key === 'Enter' && verifier2FA()} /></div>
-        <button class="bouton" onClick=${verifier2FA} disabled=${charge}>${charge ? 'Vérification…' : 'Valider'}</button>`}
-      ${etape === 'motdepasse' && html`
-        <div class="champ"><label for="nmdp">Nouveau mot de passe</label>
-          <input id="nmdp" type="password" value=${code} onInput=${e => setCode(e.target.value)} onKeyDown=${e => e.key === 'Enter' && changerMdp()} /></div>
-        <button class="bouton" onClick=${changerMdp} disabled=${charge}>${charge ? 'Enregistrement…' : 'Enregistrer et continuer'}</button>`}
-    </div>`;
-}
-
-/* ================= écran Accueil ================= */
-function Accueil({ moi, aller }) {
-  const [site, setSite] = useState(moi.sites[0]?.site_id || '');
-  const [analytics, setAnalytics] = useState(null);
-  const [convs, setConvs] = useState(null);
-  const [erreur, setErreur] = useState('');
-  useEffect(() => { if (!site) return;
-    api(`/sites/${site}/analytics?period_days=7`).then(setAnalytics).catch(e => setErreur(e.detail || 'Analytics indisponibles'));
-    api(`/sites/${site}/conversations?page_size=4`).then(c => setConvs(c.conversations)).catch(e => setErreur(e.detail || ''));
-    suivi('screen_view', { ecran: 'accueil' });
-  }, [site]);
-  const leads = analytics ? analytics.total_leads_captured : null;
-  return html`
-    <h1 class="titre-section">Bonjour ${moi.nom?.split(' ')[0] || ''}</h1>
-    <p class="sous-titre">Voici ce que Mia fait sur votre site.</p>
-    ${erreur && html`<div class="info">${erreur}</div>`}
-    <div class="kpis">
-      <div class="kpi"><div class="v">${analytics ? analytics.total_conversations : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">conversations · 7 jours</div></div>
-      <div class="kpi insistant"><div class="v">${leads === null ? html`<div class="squelette" style="width:50px"/>` : leads}</div><div class="l">leads capturés</div></div>
-      <div class="kpi"><div class="v">${analytics ? Math.round((analytics.conversion_rate || 0) * 100) + '%' : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">taux de capture</div></div>
-      <div class="kpi"><div class="v">${analytics ? analytics.total_messages : html`<div class="squelette" style="width:50px"/>`}</div><div class="l">messages</div></div>
+  <header class="entete">
+    <div class="logo-mia" aria-hidden="true">M</div>
+    <div class="titre-site">
+      <b>Chez Amina</b>
+      <span><span class="point-vivant" aria-hidden="true"></span> Mia en ligne · <span class="secteur-puce">Restauration</span></span>
     </div>
-    ${estAdmin(moi) && html`<button class="bouton" style="margin-bottom:14px" onClick=${() => aller('entrainement')}><${Icone.enseigner} /> Entraîner Mia — réponses officielles</button>`}
-    <h1 class="titre-section" style="font-size:20px">Dernières conversations</h1>
-    <p class="sous-titre"><button class="retour" style="margin:0" onClick=${() => aller('conversations')}>Tout voir</button></p>
-    ${convs === null && html`<div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px"/>`}
-    ${convs && convs.length === 0 && html`<div class="etat-vide"><h3>Aucune conversation pour l'instant</h3><p>Mia répond dès qu'un visiteur pose une question sur votre site.</p></div>`}
-    ${convs && convs.map(c => html`<${CarteConv} key=${c.conversation_id} c=${c} ouvrir=${() => aller('conversation', c)} />`)}`;
-}
+    <button class="icone-bouton" aria-label="Notifications, 3 non lues">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="pastille-non-lues">3</span>
+    </button>
+  </header>
 
-function CarteConv({ c, ouvrir }) {
-  return html`
-    <button class="conv ${c.non_lu ? 'non-lu' : ''}" onClick=${ouvrir}>
-      <div class="avatar">${initiale(c.visitor_name)}</div>
-      <div class="c">
-        <div class="l1"><b>${c.visitor_name || 'Visiteur'}</b><time>${relatif(c.last_message_at)}</time></div>
-        <p class="ap">${c.last_message || ''}</p>
-        ${c.lead_captured && html`<span class="etq lead">lead</span>`}
-        ${c.human_active && html`<span class="etq esc">prise en main</span>`}
+  <main class="contenu">
+
+    <!-- ============ ECRAN 2 : ACCUEIL ============ -->
+    <section class="ecran actif" id="ecran-accueil" aria-label="Accueil">
+      <h1 class="titre-section">Bonjour Amina</h1>
+      <p class="sous-titre">Voici ce que Mia a fait sur votre site aujourd'hui.</p>
+
+      <div class="kpis">
+        <div class="kpi"><div class="valeur">14</div><div class="libelle">conversations ce jour</div></div>
+        <div class="kpi insistant"><div class="valeur">2</div><div class="libelle">leads à traiter</div></div>
+        <div class="kpi"><div class="valeur">3</div><div class="libelle">messages non lus</div></div>
+        <div class="kpi"><div class="valeur">96%</div><div class="libelle">réponses de Mia</div></div>
       </div>
-    </button>`;
-}
 
-/* ================= écran Conversations ================= */
-function Conversations({ moi, ouvrirConversation }) {
-  const [site, setSite] = useState(moi.sites[0]?.site_id || '');
-  const [liste, setListe] = useState(null); const [filtre, setFiltre] = useState('');
-  const [total, setTotal] = useState(0);
-  useEffect(() => { if (!site) return;
-    const q = filtre ? `&${filtre}=true` : '';
-    api(`/sites/${site}/conversations?page_size=20${q}`).then(c => { setListe(c.conversations); setTotal(c.total); }).catch(() => setListe([]));
-    suivi('screen_view', { ecran: 'conversations' });
-  }, [site, filtre]);
-  return html`
-    <h1 class="titre-section">Conversations</h1>
-    <p class="sous-titre">Boîte unifiée — ${total} au total.</p>
-    <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto">
-      ${[['', 'Toutes'], ['non_lu', 'Non lues'], ['escalade', 'Escaladées'], ['avec_lead', 'Avec lead']].map(([v, l]) =>
-        html`<button key=${v} onClick=${() => setFiltre(v)}
-          style=${'padding:8px 14px;border-radius:999px;border:1px solid ' + (filtre === v ? 'var(--accent)' : 'var(--filet-controle)') + ';background:' + (filtre === v ? 'var(--accent)' : 'var(--surface)') + ';color:' + (filtre === v ? 'var(--sur-accent)' : 'var(--texte-doux)') + ';font-size:12.5px;font-weight:500;white-space:nowrap'}>${l}</button>`)}
-    </div>
-    ${liste === null && html`<div class="squelette" style="height:64px;margin-bottom:9px"/><div class="squelette" style="height:64px;margin-bottom:9px"/>`}
-    ${liste && liste.length === 0 && html`<div class="etat-vide"><h3>Rien sous ce filtre</h3><p>Essayez « Toutes » — Mia continue de répondre sur votre site.</p></div>`}
-    ${liste && liste.map(c => html`<${CarteConv} key=${c.conversation_id} c=${c} ouvrir=${() => ouvrirConversation(c)} />`)}`;
-}
-
-/* ================= écran Détail + prise en main ================= */
-function ConversationDetail({ moi, convo, revenir }) {
-  const site = moi.sites[0]?.site_id;
-  const [detail, setDetail] = useState(null);
-  const [texte, setTexte] = useState(''); const [charge, setCharge] = useState(false);
-  const [erreur, setErreur] = useState('');
-  const charger = useCallback(() => {
-    api(`/sites/${site}/conversations/${convo.conversation_id}`).then(setDetail).catch(e => setErreur(e.detail || 'Conversation indisponible'));
-  }, [site, convo]);
-  useEffect(() => { charger(); suivi('screen_view', { ecran: 'conversation' }); }, [charger]);
-  async function envoyer() {
-    if (!texte.trim()) return; setCharge(true); setErreur('');
-    try { await api(`/sites/${site}/conversations/${convo.conversation_id}/reply`, { corps: { content: texte } });
-      setTexte(''); charger(); suivi('feature_use', { fonctionnalite: 'prise_en_main' }); }
-    catch (e) { setErreur(e.detail || 'Envoi impossible'); }
-    setCharge(false);
-  }
-  async function basculer(action) {
-    setCharge(true); setErreur('');
-    try { await api(`/sites/${site}/conversations/${convo.conversation_id}/${action}`, { corps: {} }); charger(); }
-    catch (e) { setErreur(e.detail || 'Action impossible'); }
-    setCharge(false);
-  }
-  const humain = detail?.conversation?.human_active;
-  return html`
-    <button class="retour" onClick=${revenir}><${Icone.retour} /> Conversations</button>
-    <h1 class="titre-section" style="font-size:22px">${convo.visitor_name || 'Visiteur'}</h1>
-    <p class="sous-titre">${humain ? 'Vous avez la main — Mia est en pause.' : 'Mia répond. Vous pouvez prendre la main à tout moment.'}</p>
-    ${erreur && html`<div class="erreur">${erreur}</div>`}
-    <div class="bandeau-main">
-      ${humain
-        ? html`<button class="bouton" style="background:var(--surface);color:var(--accent);border:1px solid var(--accent-filet)" onClick=${() => basculer('release')} disabled=${charge}>Rendre la main à Mia</button>`
-        : html`<button class="bouton" style="background:var(--info)" onClick=${() => basculer('takeover')} disabled=${charge}>Prendre la main</button>`}
-    </div>
-    <div class="fil">
-      ${detail === null && html`<div class="squelette" style="height:44px"/><div class="squelette" style="height:44px;margin-top:9px"/>`}
-      ${detail?.messages?.map(m => html`
-        <div key=${m.id} class="bulle ${m.role === 'user' ? 'visiteur' : 'mia'}">
-          ${m.content}
-          <span class="qui">${m.role === 'user' ? (detail.visitor?.name || 'Visiteur') : (m.human ? 'Vous (conseiller)' : 'Mia')} · ${heureCourte(m.created_at)}</span>
-        </div>`)}
-    </div>
-    <div class="composeur">
-      <input placeholder="Votre réponse…" value=${texte} onInput=${e => setTexte(e.target.value)} onKeyDown=${e => e.key === 'Enter' && envoyer()} maxlength="4000" aria-label="Votre réponse" />
-      <button class="envoyer" onClick=${envoyer} disabled=${charge} aria-label="Envoyer"><${Icone.envoyer} /></button>
-    </div>`;
-}
-
-/* ================= écran Notifications ================= */
-function Notifications({ moi }) {
-  const site = moi.sites[0]?.site_id;
-  const [liste, setListe] = useState(null);
-  useEffect(() => { if (!site) return;
-    api(`/sites/${site}/notifications?page_size=30`).then(n => setListe(n.notifications)).catch(() => setListe([]));
-    suivi('screen_view', { ecran: 'notifications' });
-  }, [site]);
-  async function toutLire() {
-    await api(`/sites/${site}/notifications/read`, { corps: { toutes: true } });
-    setListe(l => l.map(n => ({ ...n, lu: true })));
-  }
-  return html`
-    <h1 class="titre-section">Notifications</h1>
-    <p class="sous-titre">Leads, escalades, visiteurs.</p>
-    ${liste && liste.some(n => !n.lu) && html`<button class="bouton" style="width:auto;margin-bottom:12px" onClick=${toutLire}>Tout marquer comme lu</button>`}
-    ${liste === null && html`<div class="squelette" style="height:56px;margin-bottom:9px"/><div class="squelette" style="height:56px;margin-bottom:9px"/>`}
-    ${liste && liste.length === 0 && html`<div class="etat-vide"><h3>Aucune notification</h3><p>Vous serez prévenu ici dès qu'un lead est capturé ou qu'une escalade demande votre attention.</p></div>`}
-    ${liste && liste.map(n => html`
-      <div key=${n.id} class="conv" style=${n.lu ? 'opacity:.6' : ''}>
-        <div class="c">
-          <div class="l1"><b>${n.titre}</b><time>${relatif(n.date_creation)}</time></div>
-          <p class="ap" style="white-space:normal">${n.corps || ''}</p>
+      <div class="carte-actions" role="group" aria-label="Actions rapides">
+        <div class="rangée">
+          <button class="action action-primaire" id="ouvrir-direct-rapide">
+            <span class="pastille-icone"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            <span>Mia en direct</span>
+          </button>
+          <button class="action">
+            <span class="pastille-icone"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span>Conversations</span>
+          </button>
+          <button class="action">
+            <span class="pastille-icone"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+            <span>Analyses</span>
+          </button>
         </div>
-      </div>`)}`;
-}
-
-/* ================= écran Entraînement (F + G, lot 4 bis) ================= */
-/* Le propriétaire déclare le MÉTIER de son site (G — source canonique du
-   noyau) et ENSEIGNE ses questions/réponses et documents (F — routes client
-   /sites/{site}/connaissances). L'effet est immédiat : Mia s'appuie sur ces
-   réponses EN PRIORITÉ dès la prochaine conversation. Écriture :
-   client_admin ; lecture : tout compte client. */
-function Entrainement({ moi, revenir }) {
-  const site = moi.sites[0]?.site_id || '';
-  const estAdmin = moi.role_client === 'client_admin';
-
-  const [secteur, setSecteur] = useState(null);
-  const [disponibles, setDisponibles] = useState([]);
-  const [choix, setChoix] = useState('');
-  const [items, setItems] = useState(null);
-  const [type, setType] = useState('qr');
-  const [question, setQuestion] = useState('');
-  const [reponse, setReponse] = useState('');
-  const [contenu, setContenu] = useState('');
-  const [source, setSource] = useState('');
-  const [message, setMessage] = useState('');
-  const [erreur, setErreur] = useState('');
-  const [charge, setCharge] = useState(false);
-
-  const recharger = useCallback(() => {
-    api('/sites/' + site + '/secteur').then(d => { setSecteur(d.secteur); setDisponibles(d.secteurs_disponibles || []); }).catch(() => {});
-    api('/sites/' + site + '/connaissances').then(d => setItems(d.items || [])).catch(() => setItems([]));
-  }, [site]);
-  useEffect(() => { recharger(); suivi('screen_view', { ecran: 'entrainement' }); }, [recharger]);
-
-  async function enregistrerMetier() {
-    setMessage(''); setErreur('');
-    try {
-      const d = await api('/sites/' + site + '/secteur', { corps: { secteur: choix || null }, methode: 'PUT' });
-      setSecteur(d.secteur); setMessage('Métier enregistré : Mia adapte son ton et son vocabulaire.');
-    } catch (e) { setErreur(e.detail || 'Enregistrement impossible.'); }
-  }
-
-  async function enseigner() {
-    setMessage(''); setErreur(''); setCharge(true);
-    const corps = { type };
-    if (type === 'qr') { corps.question = question; corps.reponse = reponse; }
-    else { corps.contenu = contenu; if (source) corps.source_url = source; }
-    try {
-      await api('/sites/' + site + '/connaissances', { corps });
-      setQuestion(''); setReponse(''); setContenu(''); setSource('');
-      setMessage('Enseigné : Mia s\'appuie sur cette réponse dès la prochaine conversation.');
-      recharger();
-    } catch (e) { setErreur(e.detail || 'Ajout impossible.'); }
-    setCharge(false);
-  }
-
-  async function archiver(id) {
-    setMessage(''); setErreur('');
-    try {
-      await api('/sites/' + site + '/connaissances/' + id, { methode: 'DELETE' });
-      setItems(l => l.filter(i => i.id !== id));
-      setMessage('Connaissance archivée : Mia ne la cite plus.');
-    } catch (e) { setErreur(e.detail || 'Archivage impossible.'); }
-  }
-
-  return html`
-    <button class="retour" onClick=${revenir}><${Icone.retour} /> Accueil</button>
-    <h1 class="titre-section">Entraînement</h1>
-    <p class="sous-titre">Dites à Mia ce qu'elle doit répondre — elle écoute en priorité.</p>
-    ${message && html`<div class="info">${message}</div>`}
-    ${erreur && html`<div class="info" style="background:color-mix(in srgb,var(--erreur) 10%,transparent);border-color:color-mix(in srgb,var(--erreur) 30%,transparent);color:var(--erreur)">${erreur}</div>`}
-
-    <div class="kpi" style="margin-bottom:14px">
-      <h3 style="margin:0 0 6px;font-size:15px;font-weight:600">Métier de votre site</h3>
-      <p style="font-size:12.5px;color:var(--texte-discret);margin:0 0 10px">
-        ${secteur ? 'Déclaré : ' + secteur + '. Mia adapte son ton et son vocabulaire au métier.' : 'Non déclaré : choisissez le métier de votre site.'}
-      </p>
-      <div class="champ" style="display:flex;gap:8px;margin-bottom:0">
-        <select class="champ-input" style="flex:1" value=${secteur || ''} onChange=${e => setChoix(e.target.value)} disabled=${!estAdmin}>
-          <option value="">— Choisir un métier —</option>
-          ${disponibles.map(s => html`<option key=${s} value=${s} selected=${s === secteur}>${s}</option>`)}
-        </select>
-        ${estAdmin && html`<button class="bouton" style="width:auto;padding:10px 16px" onClick=${enregistrerMetier}>Enregistrer</button>`}
       </div>
-    </div>
 
-    <h3 style="font-size:15px;font-weight:600;margin:0 0 4px">Vos réponses officielles</h3>
-    <p style="font-size:12.5px;color:var(--texte-discret);margin:0 0 10px">
-      Une question d'un visiteur qui ressemble à l'une de vos réponses ? Mia utilise la vôtre.
-    </p>
-
-    ${items === null && html`<div class="squelette" style="height:56px;margin-bottom:9px"/>`}
-    ${items && items.length === 0 && html`<div class="etat-vide" style="padding:24px 16px"><p style="margin:0">Aucune réponse enseignée pour l'instant. Ajoutez la première ci-dessous.</p></div>`}
-    ${items && items.map(i => html`
-      <div key=${i.id} class="conv" style="margin-bottom:8px">
-        <div class="avatar" aria-hidden="true">${i.type === 'qr' ? 'Q' : 'D'}</div>
-        <div class="c" style="flex:1">
-          <div class="l1"><b>${i.question || 'Document'}</b><span style="font-size:11px;color:var(--texte-discret)">${i.type === 'qr' ? 'Question/Réponse' : 'Document'}</span></div>
-          <p class="ap" style="white-space:normal">${(i.reponse || i.contenu || '').slice(0, 120)}${(i.reponse || i.contenu || '').length > 120 ? '…' : ''}</p>
+      <div class="bloc-analyse">
+        <h3>Dernière escalade</h3>
+        <div class="conversation non-lu" style="margin-bottom:0; border:none; padding:0; background:transparent">
+          <div class="avatar">K</div>
+          <div class="corps-conv">
+            <div class="ligne-1"><b>Koffi</b><time>il y a 12 min</time></div>
+            <p class="apercu">« Vous livrez ce soir ? Je commande pour 8 personnes »</p>
+            <div class="etiquettes">
+              <span class="etiquette escalade">prise en main demandée</span>
+              <span class="etiquette lead">lead chaud</span>
+            </div>
+          </div>
         </div>
-        ${estAdmin && html`<button class="retour" style="margin:0" onClick=${() => archiver(i.id)}>Archiver</button>`}
-      </div>`)}
+      </div>
+    </section>
 
-    ${estAdmin && html`
-      <div class="carte-connexion" style="max-width:none;margin:14px 0 0;padding:18px 16px">
-        <div class="champ" style="display:flex;gap:16px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="radio" name="type-ens" checked=${type === 'qr'} onChange=${() => setType('qr')} /> Question / Réponse</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="radio" name="type-ens" checked=${type === 'texte'} onChange=${() => setType('texte')} /> Document</label>
+    <!-- ============ ECRAN 3 : CONVERSATIONS ============ -->
+    <section class="ecran" id="ecran-conversations" aria-label="Conversations">
+      <h1 class="titre-section">Conversations</h1>
+      <p class="sous-titre">Boîte unifiée de Chez Amina — 42 au total.</p>
+
+      <div class="filtres" role="tablist" aria-label="Filtres">
+        <button class="filtre actif" role="tab" aria-selected="true">Toutes</button>
+        <button class="filtre" role="tab" aria-selected="false">Non lues · 3</button>
+        <button class="filtre" role="tab" aria-selected="false">Escaladées · 1</button>
+        <button class="filtre" role="tab" aria-selected="false">Avec lead · 2</button>
+      </div>
+
+      <article class="conversation non-lu">
+        <div class="avatar">K</div>
+        <div class="corps-conv">
+          <div class="ligne-1"><b>Koffi</b><time>12 min</time></div>
+          <p class="apercu">« Vous livrez ce soir ? Je commande pour 8 personnes »</p>
+          <div class="etiquettes"><span class="etiquette escalade">escaladée</span><span class="etiquette lead">lead</span></div>
         </div>
-        ${type === 'qr' && html`
-          <div class="champ"><label for="ens-q">Question que les visiteurs posent</label>
-            <input id="ens-q" class="champ-input" value=${question} onInput=${e => setQuestion(e.target.value)} placeholder="ex. : Livrez-vous à Abidjan ?" maxlength="500" /></div>
-          <div class="champ"><label for="ens-r">Votre réponse officielle</label>
-            <textarea id="ens-r" class="champ-input" rows="3" value=${reponse} onInput=${e => setReponse(e.target.value)} placeholder="La réponse que Mia doit donner" maxlength="4000"></textarea></div>`}
-        ${type === 'texte' && html`
-          <div class="champ"><label for="ens-c">Document — ce que Mia doit connaître</label>
-            <textarea id="ens-c" class="champ-input" rows="5" value=${contenu} onInput=${e => setContenu(e.target.value)} maxlength="20000"></textarea></div>
-          <div class="champ"><label for="ens-s">URL de la source (facultatif)</label>
-            <input id="ens-s" class="champ-input" type="url" value=${source} onInput=${e => setSource(e.target.value)} maxlength="500" /></div>`}
-        <button class="bouton" disabled=${charge} onClick=${enseigner}>${charge ? 'Envoi…' : 'Enseigner à Mia'}</button>
-      </div>`}
-    ${!estAdmin && html`<p class="sous-titre" style="margin-top:12px">L'écriture est réservée au rôle client_admin de votre site.</p>`}`;
-}
+      </article>
+      <article class="conversation non-lu">
+        <div class="avatar">A</div>
+        <div class="corps-conv">
+          <div class="ligne-1"><b>Awa</b><time>38 min</time></div>
+          <p class="apercu">« Le poulet yassa est-il épicé ? »</p>
+          <div class="etiquettes"><span class="etiquette lead">lead</span></div>
+        </div>
+      </article>
+      <article class="conversation">
+        <div class="avatar">M</div>
+        <div class="corps-conv">
+          <div class="ligne-1"><b>Moussa</b><time>hier</time></div>
+          <p class="apercu">« Merci, tout était parfait ce midi »</p>
+          <div class="etiquettes"><span class="etiquette humain">répondu par vous</span></div>
+        </div>
+      </article>
 
-/* ================= écran Compte ================= */
-function Compte({ moi, deconnexion }) {
-  const [consent, setConsent] = useState(localStorage.getItem('mia-consent') !== '0');
-  const [plans, setPlans] = useState(null);
-  useEffect(() => { api('/plans').then(setPlans).catch(() => {}); suivi('screen_view', { ecran: 'compte' }); }, []);
-  const basculerConsent = () => {
-    const v = !consent; setConsent(v); localStorage.setItem('mia-consent', v ? '1' : '0');
-    suivi('consent', { etat: v ? 'accorde' : 'refuse' });
-  };
-  return html`
-    <h1 class="titre-section">Compte</h1>
-    <p class="sous-titre">${moi.email} · ${moi.role_client || 'client'}</p>
-    <div class="carte-connexion" style="margin:0 auto 14px;max-width:none">
-      <div class="champ" style="display:flex;align-items:center;gap:12px;margin-bottom:0">
-        <div style="flex:1"><b style="font-size:14px">Statistiques d'usage</b>
-          <small style="display:block;font-size:12px;color:var(--texte-discret)">Aide à améliorer l'application — jamais le contenu des conversations</small></div>
-        <button class="interrupteur-b" role="switch" aria-checked=${consent} onClick=${basculerConsent} aria-label="Statistiques d'usage"
-          style=${'width:44px;height:26px;border-radius:999px;background:' + (consent ? 'var(--accent)' : 'var(--filet-2,var(--p-sombre-5,var(--p-neutre-4)))') + ';position:relative;flex-shrink:0'}>
-          <span style=${'position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);transition:transform var(--p-duree);transform:translateX(' + (consent ? '18px' : '0') + ')'}></span>
+      <div class="etat-vide" style="display:none" id="vide-filtre">
+        <div class="illustration"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>Rien sous ce filtre</h3>
+        <p>Aucune conversation ne correspond. Essayez « Toutes » ou revenez plus tard — Mia continue de répondre sur le site.</p>
+        <button class="bouton secondaire">Voir toutes</button>
+      </div>
+    </section>
+
+    <!-- ============ ECRAN 6 : ANALYSES ============ -->
+    <section class="ecran" id="ecran-analyses" aria-label="Analyses">
+      <h1 class="titre-section">Analyses</h1>
+      <p class="sous-titre">Tendances des 30 derniers jours.</p>
+
+      <div class="bloc-analyse">
+        <h3>Activité</h3>
+        <div class="chiffres-jour">
+          <div class="chiffre-jour"><div class="n">312</div><div class="l">conversations</div></div>
+          <div class="chiffre-jour"><div class="n">1 847</div><div class="l">messages</div></div>
+          <div class="chiffre-jour"><div class="n">38</div><div class="l">leads capturés</div></div>
+        </div>
+      </div>
+
+      <div class="bloc-analyse">
+        <h3>Ce que vos visiteurs demandent</h3>
+        <div class="barre"><span class="nom">Carte et plats</span><span class="piste"><span class="plein" style="width:88%"></span></span><span class="nombre">96</span></div>
+        <div class="barre"><span class="nom">Horaires</span><span class="piste"><span class="plein" style="width:61%"></span></span><span class="nombre">67</span></div>
+        <div class="barre"><span class="nom">Réservation</span><span class="piste"><span class="plein" style="width:47%"></span></span><span class="nombre">51</span></div>
+        <div class="barre"><span class="nom">Livraison</span><span class="piste"><span class="plein" style="width:33%"></span></span><span class="nombre">36</span></div>
+        <div class="barre"><span class="nom">Allergènes</span><span class="piste"><span class="plein" style="width:21%"></span></span><span class="nombre">23</span></div>
+      </div>
+
+      <div class="bloc-analyse">
+        <h3>Répartition</h3>
+        <div class="chiffres-jour">
+          <div class="chiffre-jour"><div class="n">12,1</div><div class="l">messages / conversation</div></div>
+          <div class="chiffre-jour"><div class="n">12,2%</div><div class="l">taux de capture</div></div>
+          <div class="chiffre-jour"><div class="n">4</div><div class="l">escalades</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ECRAN 7/8 : REGLAGES + COMPETENCES ============ -->
+    <section class="ecran" id="ecran-reglages" aria-label="Réglages">
+      <h1 class="titre-section">Réglages</h1>
+      <p class="sous-titre">Mia sur Chez Amina — rôle : Admin.</p>
+
+      <!-- Abonnement : rendu depuis la reponse /me, aucune liste en dur -->
+      <div class="groupe-reglages" id="groupe-abonnement">
+        <div class="titre-groupe">Abonnement</div>
+        <div class="competence" style="cursor:default">
+          <span class="p"><b>Plan actuel : <span id="plan-actuel">Free</span></b><small id="plan-note">Les fonctionnalités ci-dessous s'activent selon votre plan.</small></span>
+          <span class="badge-premium" id="badge-plan" style="display:none">Free</span>
+        </div>
+        <!-- les verrous ci-dessous sont GENERES depuis fonctionnalites_verrouillees -->
+        <div id="liste-verrous"></div>
+      </div>
+
+      <div class="groupe-reglages">
+        <div class="titre-groupe">Notifications — 3 événements × 5 canaux</div>
+        <table class="matrice" id="matrice-canaux" aria-label="Réglages de notification par type et par canal">
+          <thead>
+            <tr>
+              <th class="premiere" scope="col">Événement</th>
+              <th scope="col">Push</th>
+              <th scope="col">E-mail</th>
+              <th scope="col">Telegram</th>
+              <th scope="col">WhatsApp</th>
+              <th scope="col">RCS</th>
+            </tr>
+          </thead>
+          <tbody><!-- genere depuis notification_settings + etat des canaux --></tbody>
+        </table>
+        <p class="note-consent visible" style="padding-top:10px">WhatsApp et RCS arrivent prochainement — les interrupteurs s'activeront d'eux-mêmes dès que le canal sera ouvert. Aucun réglage n'est perdu.</p>
+      </div>
+
+      <div class="groupe-reglages">
+        <div class="titre-groupe">Le fonctionnement de Mia</div>
+        <button class="ligne-reglage">
+          <span class="icone-ligne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+          <span class="texte-ligne"><b>Message d'accueil</b><small>« Bonjour et bienvenue chez Amina… »</small></span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <button class="ligne-reglage">
+          <span class="icone-ligne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          <span class="texte-ligne"><b>Horaires et fermetures</b><small>Mar–Dim · 11h–23h · fuseau Abidjan</small></span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <button class="ligne-reglage">
+          <span class="icone-ligne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+          <span class="texte-ligne"><b>Notifications</b><small>Push · e-mail · Telegram</small></span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </div>
-    </div>
-    ${plans && html`
-      <div class="carte-connexion" style="margin:0 auto 14px;max-width:none">
-        <b style="font-size:14px">Votre plan : ${moi.plan || 'free'}</b>
-        <small style="display:block;font-size:12px;color:var(--texte-discret);margin:6px 0 10px">${plans.note || ''}</small>
-      </div>`}
-    <button class="bouton" style="background:transparent;color:var(--erreur);border:1px solid color-mix(in srgb,var(--erreur) 30%,transparent)" onClick=${deconnexion}>Se déconnecter</button>`;
-}
 
-/* ================= coquille ================= */
-
-/* ============ Mia en direct (bouton central — le wow moment) ============ */
-function MiaDirect({ moi, fermer }) {
-  const site = moi.sites[0]?.site_id;
-  const [fils, setFils] = useState([{ role: 'mia', texte: 'Bonjour ! Je suis Mia, l\u2019assistante de votre site. Posez-moi une question comme un visiteur le ferait.' }]);
-  const [texte, setTexte] = useState(''); const [charge, setCharge] = useState(false); const [erreur, setErreur] = useState('');
-  async function envoyer() {
-    if (!texte.trim()) return; const m = texte; setTexte(''); setCharge(true); setErreur('');
-    setFils(f => [...f, { role: 'visiteur', texte: m }]);
-    try {
-      const r = await fetch('https://web-production-4ab53.up.railway.app/api/chatbot/message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ site_id: site, message: m, test: true }) });
-      const c = await r.json().catch(() => ({}));
-      const reponse = c.reponse || c.response || c.reply || c.message;
-      setFils(f => [...f, { role: 'mia', texte: reponse || 'Mia n\u2019a pas répondu — réessayez.' }]);
-      suivi('feature_use', { fonctionnalite: 'mia_en_direct' });
-    } catch { setErreur('Test indisponible — vérifiez la connexion.'); }
-    setCharge(false);
-  }
-  return html`
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--filet)">
-      <img class="logo" src="icones/mia-192.png" alt="" aria-hidden="true">
-      <div style="flex:1"><b style="font-size:15px">Mia en direct</b><small style="display:block;font-size:12px;color:var(--succes)">conversation de test — jamais enregistrée</small></div>
-      <button class="icone-bouton" onClick=${fermer} aria-label="Fermer">✕</button>
-    </div>
-    <div class="fils">
-      ${fils.map((f, i) => html`<div key=${i} class="bulle ${f.role === 'visiteur' ? 'visiteur' : 'mia'}">${f.texte}<span class="etq" style="display:block;margin-top:4px;opacity:.7">${f.role === 'visiteur' ? 'vous' : 'Mia · test'}</span></div>`)}
-      ${charge && html`<div class="bulle mia">…</div>`}
-      ${erreur && html`<div class="erreur-bloc">${erreur}</div>`}
-    </div>
-    <div style="display:flex;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--filet)">
-      <input placeholder="Écrivez à Mia…" value=${texte} onInput=${e => setTexte(e.target.value)}
-        onKeyDown=${e => e.key === 'Enter' && envoyer()} aria-label="Message de test"
-        style="flex:1;padding:12px 16px;border-radius:999px;border:1px solid var(--filet-controle);background:var(--surface);color:var(--texte);font-size:15px" />
-      <button class="envoyer" onClick=${envoyer} disabled=${charge} aria-label="Envoyer"
-        style="width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center;flex-shrink:0">↑</button>
-    </div>`;
-}
-
-/* ============ Configuration 2FA avec QR (contrat : otpauth_uri, secret affiché UNE fois) ============ */
-function Setup2FA({ apres }) {
-  const [setup, setSetup] = useState(null); const [code, setCode] = useState('');
-  const [erreur, setErreur] = useState(''); const [charge, setCharge] = useState(false);
-  useEffect(() => { api('/2fa/setup', { corps: {} }).then(setSetup).catch(e => setErreur(e.detail || 'Configuration 2FA indisponible')); }, []);
-  useEffect(() => {
-    if (!setup || !window.qrcode) return;
-    const q = window.qrcode(0, 'M'); q.addData(setup.otpauth_uri); q.make();
-    const el = document.getElementById('qr-2fa'); if (!el) return;
-    const m = q.getModuleCount(), taille = 216, cellule = taille / m;
-    el.width = taille; el.height = taille;
-    const ctx = el.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, taille, taille); ctx.fillStyle = '#16151a';
-    for (let l = 0; l < m; l++) for (let c = 0; c < m; c++) if (q.isDark(l, c)) ctx.fillRect(c * cellule, l * cellule, cellule + .5, cellule + .5);
-  }, [setup]);
-  async function activer() {
-    setErreur(''); setCharge(true);
-    try { await api('/2fa/activate', { corps: { code } }); setCharge(false); apres(); }
-    catch (e) { setErreur(e.detail || 'Code invalide'); setCharge(false); }
-  }
-  return html`
-    <div class="contenu" style="padding-top:5vh">
-      <div style="max-width:400px;margin:10vh auto 0;padding:28px 24px;background:var(--surface);border:1px solid var(--filet);border-radius:var(--p-rayon-lg,28px)">
-        <h1 class="titre-section" style="font-size:26px">Sécurisez votre compte</h1>
-        <p class="sous-titre" style="line-height:1.5">La double authentification est requise pour votre rôle. Scannez ce code avec votre application d’authentification (Google Authenticator, Authy…). <b>Ce code ne sera plus affiché.</b></p>
-        ${erreur && html`<div class="erreur-bloc">${erreur}</div>`}
-        ${setup && html`<div class="carte-qr"><canvas id="qr-2fa" width="216" height="216" role="img" aria-label="Code QR de configuration 2FA"></canvas></div>
-          <p style="font-size:11px;color:var(--texte-discret);word-break:break-all;margin-bottom:12px">Clé manuelle : <span style="font-family:monospace">${setup.secret}</span></p>`}
-        ${!setup && html`<div class="squelette" style="height:216px;margin-bottom:12px"/>`}
-        <input inputmode="numeric" maxlength="6" placeholder="Code à 6 chiffres" value=${code} onInput=${e => setCode(e.target.value)}
-          onKeyDown=${e => e.key === 'Enter' && activer()} aria-label="Code de vérification"
-          style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--filet-controle);background:var(--fond);color:var(--texte);font-size:15px;margin-bottom:12px;text-align:center;letter-spacing:4px" />
-        <button class="bouton" style="width:100%" onClick=${activer} disabled=${charge}>${charge ? 'Vérification…' : 'Activer la double authentification'}</button>
+      <div class="groupe-reglages">
+        <div class="titre-groupe">Compétences de Mia — restauration</div>
+        <div class="competence">
+          <span class="p"><b>Carte et plats</b><small>plats, prix, allergènes, régimes</small></span>
+          <button class="interrupteur" role="switch" aria-checked="true" aria-label="Carte et plats"></button>
+        </div>
+        <div class="competence">
+          <span class="p"><b>Horaires</b><small>ouverture, jours fermés</small></span>
+          <button class="interrupteur" role="switch" aria-checked="true" aria-label="Horaires"></button>
+        </div>
+        <div class="competence">
+          <span class="p"><b>Groupes et événements</b><small>privatisations, grands tabl</small></span>
+          <button class="interrupteur" role="switch" aria-checked="true" aria-label="Groupes et événements"></button>
+        </div>
+        <div class="competence">
+          <span class="p"><b>Liste d'attente</b><small>prise en charge automatique</small></span>
+          <button class="interrupteur" role="switch" aria-checked="false" aria-label="Liste d'attente"></button>
+          <span class="badge-bientot">bientôt</span>
+        </div>
       </div>
-    </div>`;
+
+      <div class="groupe-reglages">
+        <div class="titre-groupe">Compte</div>
+        <div class="competence">
+          <span class="p"><b>Statistiques d'usage</b><small>aide à améliorer l'application — jamais le contenu des conversations</small></span>
+          <button class="interrupteur" role="switch" aria-checked="true" id="interrupteur-consent" aria-label="Statistiques d'usage"></button>
+        </div>
+        <p class="note-consent" id="note-consent">Désactivé : aucun événement d'usage n'est envoyé. Votre choix est tracé et peut être modifié à tout moment.</p>
+        <button class="ligne-reglage">
+          <span class="icone-ligne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+          <span class="texte-ligne"><b>Analytics de l'application</b><small>installations, ouvertures, écrans les plus vus — 30 jours</small></span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="groupe-reglages">
+        <div class="titre-groupe">Confidentialité — obligatoire</div>
+        <button class="ligne-reglage">
+          <span class="icone-ligne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <span class="texte-ligne"><b>Données des visiteurs</b><small>export et suppression par conversation · rétention 90 jours</small></span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ NAVIGATION BASSE (structure Jeko : 4 onglets + bouton central) ============ -->
+  <nav class="nav-basse" aria-label="Navigation principale">
+    <button class="onglet" data-cible="ecran-accueil" aria-current="page">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      Accueil
+    </button>
+    <button class="onglet" data-cible="ecran-conversations">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Conversations
+    </button>
+    <button class="bouton-central" id="ouvrir-direct" aria-label="Ouvrir Mia en direct">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+    </button>
+    <button class="onglet" data-cible="ecran-analyses">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+      Analyses
+    </button>
+    <button class="onglet" data-cible="ecran-reglages">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Réglages
+    </button>
+  </nav>
+
+  <!-- ============ MODALE : MIA EN DIRECT (ecran 10, wow moment) ============ -->
+  <div class="voile" id="voile"></div>
+  <div class="modale-direct" id="modale-direct" role="dialog" aria-modal="true" aria-label="Test de Mia en direct">
+    <div class="tete">
+      <div class="logo-mia" aria-hidden="true">M</div>
+      <div style="flex:1"><b>Mia en direct</b><small>conversation de test — jamais enregistrée</small></div>
+      <button class="icone-bouton" id="fermer-direct" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="fils" id="fils">
+      <div class="bulle mia">Bonjour ! Je suis Mia, l'assistante de Chez Amina. Envie de découvrir la carte du jour ?<span class="heure">test</span></div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap">
+        <button class="suggestion">Que mangez-vous ce soir ?</button>
+        <button class="suggestion">Vous livrez ?</button>
+      </div>
+    </div>
+    <div class="composeur">
+      <input type="text" id="saisie" placeholder="Écrivez à Mia…" aria-label="Message de test">
+      <button class="envoyer" id="envoyer" aria-label="Envoyer">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ MODALE : UPGRADE (verrou premium, reponse backend honnete) ============ -->
+  <div class="modale-upgrade" id="modale-upgrade" role="dialog" aria-modal="true" aria-label="Passer à Premium">
+    <div class="feuille">
+      <div class="poignee" aria-hidden="true"></div>
+      <h3 id="upgrade-titre">Passer à Premium</h3>
+      <p class="sous" id="upgrade-raison">Cette fonctionnalité fait partie du plan Premium.</p>
+      <ul class="avantages" id="upgrade-avantages"><!-- genere depuis /plans --></ul>
+      <button class="bouton" id="bouton-souscrire">Passer à Premium</button>
+      <div class="resultat" id="resultat-non-configure" role="status">
+        <b>Disponible prochainement</b>
+        <p>Votre intérêt est enregistré — vous serez notifié dès l'ouverture des souscriptions. Aucun paiement n'a été demandé.</p>
+      </div>
+      <div class="flux-paiement" id="flux-paiement">
+        <button class="bouton" style="margin-top:10px; background:var(--succes)">Continuer vers le paiement</button>
+        <p class="sous" style="margin:10px 0 0; font-size:11.5px">Branche affichée uniquement quand le backend répond <span style="font-family:monospace">en_attente_paiement</span>.</p>
+      </div>
+      <button class="bouton secondaire" style="width:100%; justify-content:center; margin-top:10px" id="fermer-upgrade">Plus tard</button>
+      <p class="sous" style="margin:14px 0 0; font-size:11px; text-align:center">Démo : <button id="simuler-cles" style="color:var(--accent); font-weight:600; text-decoration:underline">simuler un fournisseur configuré</button> pour voir la branche paiement.</p>
+    </div>
+  </div>
+</div>
+
+<p class="legende">Maquette exécutable — écrans clés de l'app Mia, thèmes clair et sombre.
+Jetons du noyau uniquement (aucune valeur en dur), polices auto-hébergées, zéro emoji.
+Structure de référence Jèko : navigation basse 4 onglets + bouton central.</p>
+
+<script>
+/* bascule des ecrans */
+document.querySelectorAll('.onglet[data-cible]').forEach(o => {
+  o.addEventListener('click', () => {
+    document.querySelectorAll('.onglet[data-cible]').forEach(x => x.removeAttribute('aria-current'));
+    o.setAttribute('aria-current','page');
+    document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+    document.getElementById(o.dataset.cible).classList.add('actif');
+    document.querySelector('.contenu').scrollTop = 0;
+  });
+});
+/* bascule theme */
+const tel = document.getElementById('telephone');
+document.getElementById('bascule-theme').addEventListener('click', e => {
+  const html = document.documentElement;
+  const sombre = html.getAttribute('data-theme') !== 'dark';
+  html.setAttribute('data-theme', sombre ? 'dark' : 'light');
+  e.target.textContent = sombre ? 'Thème clair' : 'Thème sombre';
+  e.target.setAttribute('aria-pressed', String(sombre));
+});
+/* hors ligne */
+document.getElementById('bascule-hors-ligne').addEventListener('click', e => {
+  tel.classList.toggle('hors-ligne');
+  e.target.textContent = tel.classList.contains('hors-ligne') ? 'En ligne' : 'Hors ligne';
+});
+/* modale Mia en direct */
+const ouvrir = () => tel.classList.add('ouverte');
+const fermer = () => { tel.classList.remove('ouverte'); document.getElementById('saisie').blur(); };
+document.getElementById('ouvrir-direct').addEventListener('click', ouvrir);
+document.getElementById('ouvrir-direct-rapide').addEventListener('click', ouvrir);
+document.getElementById('fermer-direct').addEventListener('click', fermer);
+document.getElementById('voile').addEventListener('click', fermer);
+/* fil de test repondant */
+const fils = document.getElementById('fils');
+const reponses = [
+  'Ce soir : thiéboudienne, poulet yassa et caprice d\'Amina. Je vous envoie la carte complète ?',
+  'Oui, livraison de 11h à 22h sur Cocody et Marcory. Souhaitez-vous être contacté pour une commande ?',
+  'Avec plaisir ! Puis-je noter votre numéro pour que l\'équipe vous confirme ?'
+];
+let i = 0;
+function envoyer(){
+  const saisie = document.getElementById('saisie');
+  const texte = saisie.value.trim();
+  if (!texte) return;
+  const bulle = document.createElement('div');
+  bulle.className = 'bulle visiteur'; bulle.textContent = texte;
+  fils.appendChild(bulle); saisie.value = ''; fils.scrollTop = fils.scrollHeight;
+  const indicateur = document.createElement('div');
+  indicateur.className = 'bulle mia'; indicateur.textContent = '…';
+  fils.appendChild(indicateur); fils.scrollTop = fils.scrollHeight;
+  setTimeout(() => {
+    indicateur.textContent = reponses[i % reponses.length];
+    const h = document.createElement('span'); h.className = 'heure'; h.textContent = 'test';
+    indicateur.appendChild(h); i++; fils.scrollTop = fils.scrollHeight;
+  }, 700);
 }
+document.getElementById('envoyer').addEventListener('click', envoyer);
+document.getElementById('saisie').addEventListener('keydown', e => { if (e.key === 'Enter') envoyer(); });
+document.querySelectorAll('.suggestion').forEach(s => s.addEventListener('click', () => {
+  document.getElementById('saisie').value = s.textContent; envoyer();
+}));
+/* interrupteurs */
+document.querySelectorAll('.interrupteur').forEach(int => int.addEventListener('click', () => {
+  int.setAttribute('aria-checked', int.getAttribute('aria-checked') !== 'true');
+}));
 
-function App() {
-  const [moi, setMoi] = useState(null);
-  const [ecran, setEcran] = useState('accueil');
-  const [convoOuverte, setConvoOuverte] = useState(null);
-  const [nonLues, setNonLues] = useState(0);
-  const [direct, setDirect] = useState(false);
-  const [horsLigne, setHorsLigne] = useState(!navigator.onLine);
-  useEffect(() => {
-    const en = () => setHorsLigne(false); const hors = () => setHorsLigne(true);
-    addEventListener('online', en); addEventListener('offline', hors);
-    return () => { removeEventListener('online', en); removeEventListener('offline', hors); };
-  }, []);
+/* ==================================================================
+   PREMIUM, CANAUX, CONSENTEMENT — tout est rendu depuis la reponse
+   du backend simulee ci-dessous. AUCUNE liste en dur dans l'UI :
+   ajouter une fonctionnalite ou un canal cote serveur apparaît ici
+   sans changer une ligne de rendu.
+   ================================================================== */
 
-  const chargerMoi = useCallback(() => {
-    api('/me').then(m => { setMoi(m); suivi('session_start'); }).catch(e => {
-      if (e.statut === 403 && /provision/i.test(e.detail || '')) { jeton.effacer(); setMoi(null); }
-      else if (e.statut === 401) { jeton.effacer(); setMoi(null); }
-      else setMoi(null);
-    });
-  }, []);
-  useEffect(() => { if (jeton.lire()) chargerMoi(); }, []);
+const REPONSE_ME = {
+  plan: "free",
+  fonctionnalites_actives: ["notifications_push", "conversations", "analytics_base"],
+  fonctionnalites_verrouillees: [
+    { cle: "analytics_export", plan_requis: "premium",
+      raison: "Exportez vos statistiques en CSV ou PDF.",
+      avantages: ["Export CSV et PDF de vos analyses", "Historique complet sur 12 mois", "Comparaison de périodes"] },
+    { cle: "messages_pro", plan_requis: "premium",
+      raison: "Recevez les messages d'ePerformance directement dans l'app.",
+      avantages: ["Support prioritaire", "Nouvelles compétences en avant-première"] }
+  ],
+  etat_canaux: { push: "actif", email: "actif", telegram: "actif", whatsapp: "non_configure", rcs: "non_configure" },
+  notification_settings: {
+    nouveau_lead:     { push: true, email: true,  telegram: true  },
+    escalade:         { push: true, email: true,  telegram: true  },
+    nouveau_visiteur: { push: false, email: false, telegram: false }
+  }
+};
 
-  useEffect(() => { if (moi) {
-    const s = moi.sites[0]?.site_id;
-    if (s) api(`/sites/${s}/notifications?page_size=1`).then(n => setNonLues(n.non_lues || 0)).catch(() => {});
-  } }, [moi, ecran]);
+/* --- verrous : generes depuis fonctionnalites_verrouillees --- */
+const listeV = document.getElementById('liste-verrous');
+REPONSE_ME.fonctionnalites_verrouillees.forEach(f => {
+  const b = document.createElement('button');
+  b.className = 'ligne-reglage verrouillee';
+  b.innerHTML = `
+    <span class="icone-ligne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+    <span class="texte-ligne"><b>${f.cle.replace('_', ' ')}</b><small>${f.raison}</small></span>
+    <span class="badge-premium">${f.plan_requis}</span>`;
+  b.addEventListener('click', () => ouvrirUpgrade(f));
+  listeV.appendChild(b);
+});
 
-  const deconnexion = () => { suivi('session_end'); jeton.effacer(); setMoi(null); setEcran('accueil'); };
+/* --- matrice 3x5 : generee depuis notification_settings + etat_canaux --- */
+const tbody = document.querySelector('#matrice-canaux tbody');
+const libelles = { nouveau_lead: 'Nouveau lead', escalade: 'Escalade', nouveau_visiteur: 'Nouveau visiteur' };
+const iconeBloquee = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="opacity:.55"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+Object.entries(REPONSE_ME.notification_settings).forEach(([type, canaux]) => {
+  const tr = document.createElement('tr');
+  let tds = `<td class="premiere">${libelles[type] || type}</td>`;
+  Object.keys(REPONSE_ME.etat_canaux).forEach(canal => {
+    const actif = REPONSE_ME.etat_canaux[canal] === 'actif';
+    if (actif) {
+      tds += `<td><button class="interrupteur" role="switch" aria-checked="${!!canaux[canal]}" aria-label="${libelles[type]} par ${canal}"></button></td>`;
+    } else {
+      tds += `<td class="canal-inactif"><span class="canal-futur">${iconeBloquee}<span class="bientot">bientôt</span></span></td>`;
+    }
+  });
+  tr.innerHTML = tds;
+  tbody.appendChild(tr);
+});
+tbody.querySelectorAll('.interrupteur').forEach(int => int.addEventListener('click', () => {
+  int.setAttribute('aria-checked', int.getAttribute('aria-checked') !== 'true');
+}));
 
-  if (!moi) return html`<${Connexion} apresConnexion=${chargerMoi} />`;
-  const doit2fa = moi.tfa && moi.tfa.requise && !moi.tfa.active;
-  if (doit2fa) return html`<${Setup2FA} apres=${chargerMoi} />`;
+/* --- flux upgrade : la branche affichee suit la reponse du backend --- */
+let fournisseurConfigure = false;
+const modaleU = document.getElementById('modale-upgrade');
+const tel2 = document.getElementById('telephone');
 
-  const sites = moi.sites || [];
-  const ouvrirConversation = c => { setConvoOuverte(c); setEcran('conversation'); };
-
-  return html`
-    <div class="app ${horsLigne ? 'hors-ligne' : ''}">
-      <div class="bandeau-hors-ligne" role="status">Hors ligne — conversations consultables, envoi en attente</div>
-      <header class="entete">
-        <img class="logo" src="icones/mia-192.png" alt="" aria-hidden="true">
-        <div class="t"><b>${sites[0]?.site_name || 'Mia'}</b><small style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--succes);display:inline-block"></span>Mia en ligne · ${sites[0]?.secteur || ''}</small></div>
-        ${sites.length > 1 && html`<select class="sites" aria-label="Site géré">${sites.map(s => html`<option key=${s.site_id}>${s.site_name}</option>`)}</select>`}
-      </header>
-      <main class="contenu">
-        ${ecran === 'accueil' && html`<${Accueil} moi=${moi} aller=${setEcran} />`}
-        ${ecran === 'conversations' && html`<${Conversations} moi=${moi} ouvrirConversation=${ouvrirConversation} />`}
-        ${ecran === 'conversation' && convoOuverte && html`<${ConversationDetail} moi=${moi} convo=${convoOuverte} revenir=${() => setEcran('conversations')} />`}
-        ${ecran === 'notifications' && html`<${Notifications} moi=${moi} />`}
-        ${ecran === 'compte' && html`<${Compte} moi=${moi} deconnexion=${deconnexion} />`}
-        ${ecran === 'entrainement' && html`<${Entrainement} moi=${moi} revenir=${() => setEcran('accueil')} />`}
-      </main>
-      <nav class="nav-basse" aria-label="Navigation principale">
-        <button class="onglet" aria-current=${ecran === 'accueil' ? 'page' : undefined} onClick=${() => setEcran('accueil')}><${Icone.accueil} /> Accueil</button>
-        <button class="onglet" aria-current=${ecran.startsWith('conversation') ? 'page' : undefined} onClick=${() => setEcran('conversations')}><${Icone.conv} /> Conversations</button>
-        <button class="bouton-central" onClick=${() => setDirect(true)} aria-label="Ouvrir Mia en direct"><${Icone.direct} /></button>
-        <button class="onglet" aria-current=${ecran === 'notifications' ? 'page' : undefined} onClick=${() => setEcran('notifications')}>
-          <span style="display:flex;align-items:center"><${Icone.cloche} />${nonLues > 0 && html`<span class="pastille">${nonLues}</span>`}</span> Alertes</button>
-        <button class="onglet" aria-current=${ecran === 'compte' ? 'page' : undefined} onClick=${() => setEcran('compte')}><${Icone.compte} /> Compte</button>
-      </nav>
-      <div class="voile" onClick=${() => setDirect(false)}></div>
-      ${direct && html`<div class="modale-direct" role="dialog" aria-modal="true" aria-label="Test de Mia en direct"><${MiaDirect} moi=${moi} fermer=${() => setDirect(false)} /></div>`}
-    </div>`;
+function ouvrirUpgrade(f) {
+  document.getElementById('upgrade-titre').textContent =
+    f.plan_requis === 'premium' ? 'Passer à Premium' : 'Passer à Pro';
+  document.getElementById('upgrade-raison').textContent = f.raison;
+  document.getElementById('upgrade-avantages').innerHTML = f.avantages
+    .map(a => `<li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>${a}</li>`).join('');
+  document.getElementById('bouton-souscrire').textContent =
+    f.plan_requis === 'premium' ? 'Passer à Premium' : 'Passer à Pro';
+  document.getElementById('resultat-non-configure').classList.remove('visible');
+  document.getElementById('flux-paiement').classList.remove('visible');
+  document.getElementById('bouton-souscrire').style.display = '';
+  tel2.classList.add('ouverte-upgrade');
 }
-render(html`<${App} />`, document.getElementById('racine'));
+function fermerUpgrade(){ tel2.classList.remove('ouverte-upgrade'); }
+document.getElementById('fermer-upgrade').addEventListener('click', fermerUpgrade);
+document.getElementById('upgrade-raison').closest('.feuille').addEventListener('click', e => {
+  if (e.target.classList.contains('modale-upgrade')) fermerUpgrade();
+});
 
-/* service worker + installation */
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/app/sw.js').catch(() => {});
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__installationPossible = e; });
-suivi('app_open');
+/* POST /subscribe simule — la branche suit la reponse, jamais une decision UI */
+document.getElementById('bouton-souscrire').addEventListener('click', function(){
+  this.disabled = true; this.textContent = 'Envoi…';
+  setTimeout(() => {
+    this.disabled = false;
+    const reponse = fournisseurConfigure
+      ? { statut: 'en_attente_paiement', reference_fournisseur: 'JEKO-DEMO-42' }
+      : { statut: 'non_configure', raison: "fournisseur d'abonnement Jeko non configuré (JEKO_API_URL / JEKO_API_KEY absents)" };
+    if (reponse.statut === 'non_configure') {
+      /* intention enregistree cote serveur : message honnete, pas d'erreur */
+      this.style.display = 'none';
+      document.getElementById('resultat-non-configure').classList.add('visible');
+    } else {
+      this.style.display = 'none';
+      document.getElementById('flux-paiement').classList.add('visible');
+    }
+  }, 650);
+});
+document.getElementById('simuler-cles').addEventListener('click', () => {
+  fournisseurConfigure = true;
+  document.getElementById('bouton-souscrire').style.display = '';
+  document.getElementById('resultat-non-configure').classList.remove('visible');
+});
+
+/* --- consentement RGPD : sans accord, aucun evenement ne part --- */
+const consent = document.getElementById('interrupteur-consent');
+consent.addEventListener('click', () => {
+  const accorde = consent.getAttribute('aria-checked') !== 'true';
+  consent.setAttribute('aria-checked', String(accorde));
+  document.getElementById('note-consent').classList.toggle('visible', !accorde);
+  if (accorde) suivi('consent', { etat: 'accorde' }); else suivi('consent', { etat: 'refuse' });
+});
+
+/* --- tracking local-first : file d'evenements, event_id UUID, envoi batch --- */
+const file = [];
+const install = 'inst-' + Math.random().toString(36).slice(2, 10);
+suivi('install'); suivi('app_open');
+function suivi(type, metadata = {}) {
+  if (type !== 'consent' && consent.getAttribute('aria-checked') !== 'true') return;
+  file.push({ event_id: crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2),
+              type, date_evenement: new Date().toISOString(), metadata });
+  envoyerQuandPossible();
+}
+let minuteur = null;
+function envoyerQuandPossible(){
+  clearTimeout(minuteur);
+  minuteur = setTimeout(() => {
+    /* demo : le POST reelle irait a /api/client/v1/analytics/event.
+       Les evenements restent en file jusqu'au consentement et au reseau —
+       un rejeu est deduplique cote serveur par event_id. */
+    window.__evenements_en_attente = file.length;
+  }, 800);
+}
 </script>
 </body>
 </html>
