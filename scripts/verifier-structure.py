@@ -76,7 +76,15 @@ NOMS_AGENTS = re.compile(
 
 HEX_A_TRADUIRE = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 GOOGLE_FONTS = re.compile(r"fonts\.googleapis\.com|fonts\.gstatic\.com|googleapis\.com/css")
-REQUETE_EXTERNE = re.compile(r'(?:src|href)="https?://(?!mia\.eperformance\.pro)[^"]+"', re.IGNORECASE)
+# « Zéro référence externe au chargement » (§7) = ce que le navigateur
+# TÉLÉCHARGE à l'ouverture : src= (script, img, video…) et <link … href=>
+# (feuille de style, preconnect). Un lien de navigation <a href> ne charge
+# rien — le flagger interdisait à la LP de pointer vers eperformance.pro et
+# le blog (2 faux positifs constatés le 20/09, instrument corrigé).
+REQUETE_EXTERNE = re.compile(
+    r'\bsrc="https?://(?!mia\.eperformance\.pro)[^"]*"'
+    r'|<link[^>]+href="https?://(?!mia\.eperformance\.pro)[^"]*"',
+    re.IGNORECASE)
 EMOJI = re.compile(
     "[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U0001F1E6-\U0001F1FF\U00002B00-\U00002BFF\U0000FE0F]"
 )
